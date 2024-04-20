@@ -4,7 +4,6 @@ using PlatformPlatform.SharedKernel.DomainCore.Persistence;
 
 namespace PlatformPlatform.AccountManagement.Application.Users;
 
-[UsedImplicitly]
 public sealed record GetUsersQuery(
     string? Search = null,
     UserRole? UserRole = null,
@@ -12,14 +11,12 @@ public sealed record GetUsersQuery(
     SortOrder SortOrder = SortOrder.Ascending,
     int? PageSize = null,
     int? PageOffset = null
-)
-    : IRequest<Result<SearchUsersDto>>;
+) : IRequest<Result<GetUsersResponseDto>>;
 
-[UsedImplicitly]
 public sealed class GetUsersHandler(IUserRepository userRepository)
-    : IRequestHandler<GetUsersQuery, Result<SearchUsersDto>>
+    : IRequestHandler<GetUsersQuery, Result<GetUsersResponseDto>>
 {
-    public async Task<Result<SearchUsersDto>> Handle(GetUsersQuery query, CancellationToken cancellationToken)
+    public async Task<Result<GetUsersResponseDto>> Handle(GetUsersQuery query, CancellationToken cancellationToken)
     {
         var (users, count, totalPages) = await userRepository.Search(
             query.Search,
@@ -30,8 +27,8 @@ public sealed class GetUsersHandler(IUserRepository userRepository)
             query.PageOffset,
             cancellationToken
         );
-
-        var userResponseDtos = users.Select(u => u.Adapt<UserResponseDto>()).ToArray();
-        return new SearchUsersDto(count, totalPages, query.PageOffset ?? 0, userResponseDtos);
+        
+        var userResponseDtos = users.Adapt<UserResponseDto[]>();
+        return new GetUsersResponseDto(count, totalPages, query.PageOffset ?? 0, userResponseDtos);
     }
 }

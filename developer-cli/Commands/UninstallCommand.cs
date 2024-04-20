@@ -11,7 +11,8 @@ public class UninstallCommand : Command
 {
     public UninstallCommand() : base(
         "uninstall",
-        $"Will remove the {Configuration.AliasName} CLI alias, and delete the CERTIFICATE_PASSWORD and SQL_SERVER_PASSWORD environment variables.")
+        $"Will remove the {Configuration.AliasName} CLI alias."
+    )
     {
         Handler = CommandHandler.Create(Execute);
     }
@@ -20,8 +21,7 @@ public class UninstallCommand : Command
     {
         if (Configuration.IsWindows && !Configuration.IsDebugMode)
         {
-            AnsiConsole.MarkupLine(
-                $"[yellow]Please run 'dotnet run uninstall' from {Configuration.GetSourceCodeFolder()}.[/]");
+            AnsiConsole.MarkupLine($"[yellow]Please run 'dotnet run uninstall' from {Configuration.GetSourceCodeFolder()}.[/]");
             Environment.Exit(0);
         }
 
@@ -30,8 +30,7 @@ public class UninstallCommand : Command
              Confirm uninstallation:
 
              This will do the following:
-             - Remove the PlatformPlatform Developer CLI alias (on Mac) and remove the CLi from the PATH (Windows)
-             - Remove the CERTIFICATE_PASSWORD and SQL_SERVER_PASSWORD environment variables
+             - Remove the PlatformPlatform Developer CLI alias (on Mac) and remove the CLI from the PATH (Windows)
              - Delete the {Configuration.PublishFolder}/{Configuration.AliasName}.* files
              - Remove the {Configuration.PublishFolder} folder if empty
 
@@ -42,7 +41,6 @@ public class UninstallCommand : Command
         {
             DeleteFilesFolder();
             RemoveAlias();
-            RemoveEnvironmentVariables();
 
             AnsiConsole.MarkupLine("[green]Please restart your terminal.[/]");
         }
@@ -59,29 +57,10 @@ public class UninstallCommand : Command
                 AnsiConsole.MarkupLine("[green]The PlatformPlatform CLI folder has been removed from the PATH.[/]");
             }
         }
-        else if (Configuration.IsMacOs)
+        else if (Configuration.IsMacOs || Configuration.IsLinux)
         {
             Configuration.MacOs.DeleteAlias();
             AnsiConsole.MarkupLine("[green]Alias has been removed.[/]");
-        }
-    }
-
-    private void RemoveEnvironmentVariables()
-    {
-        RemoveEnvironmentVariable("CERTIFICATE_PASSWORD");
-        RemoveEnvironmentVariable("SQL_SERVER_PASSWORD");
-        AnsiConsole.MarkupLine("[green]Environment variables have been removed.[/]");
-    }
-
-    private void RemoveEnvironmentVariable(string variableName)
-    {
-        if (Configuration.IsWindows)
-        {
-            Environment.SetEnvironmentVariable(variableName, null, EnvironmentVariableTarget.User);
-        }
-        else if (Configuration.IsMacOs)
-        {
-            Configuration.MacOs.DeleteEnvironmentVariable(variableName);
         }
     }
 

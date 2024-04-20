@@ -18,7 +18,6 @@ public class InstallCommand : Command
          [green]The CLI can be used to:[/]
          * Start all PlatformPlatform services locally in one command
          * Be guided through setting up secure passwordless continuous deployments between GitHub and Azure
-         * Test deploy your application to Azure from your local machine
          * Run static code analysis on your codebase to ensure it does not fail when running in GitHub Workflows
          * Run tests and show code coverage reports locally
          * Much more is coming soon!
@@ -28,7 +27,7 @@ public class InstallCommand : Command
          It's a great way to automate workflows and share them with your team.
 
          [green]Is this secure?[/]
-         Like any code you copy from the internet, you should always review it before you run it.
+         Yes. But, like any code you copy from the internet, you should always review it before you run it.
          Just open the project in your IDE and review the code.
 
          [green]How does it work?[/]
@@ -41,7 +40,8 @@ public class InstallCommand : Command
 
     public InstallCommand() : base(
         "install",
-        $"This will register the alias {Configuration.AliasName} so it will be available everywhere.")
+        $"This will register the alias {Configuration.AliasName} so it will be available everywhere."
+    )
     {
         Handler = CommandHandler.Create(Execute);
     }
@@ -57,30 +57,21 @@ public class InstallCommand : Command
         AnsiConsole.Write(new Markup(Intro));
         AnsiConsole.WriteLine();
 
-        if (AnsiConsole.Confirm(
-                $"This will register the alias '[green]{Configuration.AliasName}[/]', so it will be available everywhere."))
+        if (AnsiConsole.Confirm($"This will register the alias '[green]{Configuration.AliasName}[/]', so it will be available everywhere."))
         {
             AnsiConsole.WriteLine();
             RegisterAlias();
         }
 
-        if (AnsiConsole.Confirm(
-                "PlatformPlatform requires a self-signed certificate and a SQL Server password. Do you want to create them now?"))
-        {
-            AnsiConsole.WriteLine();
-            var command = new ConfigureDeveloperEnvironmentCommand();
-            command.Invoke(Array.Empty<string>());
-        }
-
         if (Configuration.IsWindows)
         {
-            AnsiConsole.MarkupLine(
-                "Please restart your terminal to update your PATH and environment variables.");
+            AnsiConsole.MarkupLine("Please restart your terminal to update your PATH.");
         }
         else
         {
             AnsiConsole.MarkupLine(
-                $"Please restart your terminal to update your PATH and environment variables (or run [green]source ~/{Configuration.MacOs.GetShellInfo().ProfileName}[/]).");
+                $"Please restart your terminal to update your PATH (or run [green]source ~/{Configuration.MacOs.GetShellInfo().ProfileName}[/])."
+            );
         }
     }
 
@@ -97,7 +88,7 @@ public class InstallCommand : Command
         {
             Configuration.Windows.AddFolderToPath(Configuration.PublishFolder);
         }
-        else if (Configuration.IsMacOs)
+        else if (Configuration.IsMacOs || Configuration.IsLinux)
         {
             Configuration.MacOs.RegisterAliasMacOs();
         }

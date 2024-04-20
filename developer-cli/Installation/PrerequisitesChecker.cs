@@ -6,19 +6,12 @@ using Spectre.Console;
 
 namespace PlatformPlatform.DeveloperCli.Installation;
 
-public record Prerequisite(
-    PrerequisiteType Type,
-    string Name,
-    string? DisplayName = null,
-    Version? Version = null,
-    string? Regex = null
-);
+public record Prerequisite(PrerequisiteType Type, string Name, string? DisplayName = null, Version? Version = null, string? Regex = null);
 
 public enum PrerequisiteType
 {
     CommandLineTool,
-    DotnetWorkload,
-    EnvironmentVariable
+    DotnetWorkload
 }
 
 public static class PrerequisitesChecker
@@ -30,9 +23,7 @@ public static class PrerequisitesChecker
         new Prerequisite(PrerequisiteType.CommandLineTool, "yarn", "Yarn", new Version(1, 22)),
         new Prerequisite(PrerequisiteType.CommandLineTool, "az", "Azure CLI", new Version(2, 55)),
         new Prerequisite(PrerequisiteType.CommandLineTool, "gh", "GitHub CLI", new Version(2, 41)),
-        new Prerequisite(PrerequisiteType.DotnetWorkload, "aspire", "Aspire", Regex: """aspire\s*8\.0\.0-preview.4"""),
-        new Prerequisite(PrerequisiteType.EnvironmentVariable, "SQL_SERVER_PASSWORD"),
-        new Prerequisite(PrerequisiteType.EnvironmentVariable, "CERTIFICATE_PASSWORD")
+        new Prerequisite(PrerequisiteType.DotnetWorkload, "aspire", "Aspire", Regex: """aspire\s*8\.0\.0-preview.5"""),
     ];
 
     public static void Check(params string[] prerequisiteName)
@@ -64,13 +55,6 @@ public static class PrerequisitesChecker
                     }
 
                     break;
-                case PrerequisiteType.EnvironmentVariable:
-                    if (!IsEnvironmentVariableSet(prerequisite.Name))
-                    {
-                        invalid = true;
-                    }
-
-                    break;
             }
         }
 
@@ -84,32 +68,32 @@ public static class PrerequisitesChecker
     {
         // Check if the command line tool is installed
         var checkOutput = ProcessHelper.StartProcess(new ProcessStartInfo
-        {
-            FileName = Configuration.IsWindows ? "where" : "which",
-            Arguments = command,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        });
+            {
+                FileName = Configuration.IsWindows ? "where" : "which",
+                Arguments = command,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }
+        );
 
         var possibleFileLocations = checkOutput.Split(Environment.NewLine);
 
-        if (string.IsNullOrWhiteSpace(checkOutput) || !possibleFileLocations.Any() ||
-            !File.Exists(possibleFileLocations[0]))
+        if (string.IsNullOrWhiteSpace(checkOutput) || !possibleFileLocations.Any() || !File.Exists(possibleFileLocations[0]))
         {
-            AnsiConsole.MarkupLine(
-                $"[red]{displayName} of minimum version {minVersion} should be installed.[/]");
+            AnsiConsole.MarkupLine($"[red]{displayName} of minimum version {minVersion} should be installed.[/]");
 
             return false;
         }
 
         // Get the version of the command line tool
         var output = ProcessHelper.StartProcess(new ProcessStartInfo
-        {
-            FileName = Configuration.IsWindows ? "cmd.exe" : "/bin/bash",
-            Arguments = Configuration.IsWindows ? $"/c {command} --version" : $"-c \"{command} --version\"",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        });
+            {
+                FileName = Configuration.IsWindows ? "cmd.exe" : "/bin/bash",
+                Arguments = Configuration.IsWindows ? $"/c {command} --version" : $"-c \"{command} --version\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }
+        );
 
         var versionRegex = new Regex(@"\d+\.\d+\.\d+(\.\d+)?");
         var match = versionRegex.Match(output);
@@ -118,14 +102,16 @@ public static class PrerequisitesChecker
             var version = Version.Parse(match.Value);
             if (version >= minVersion) return true;
             AnsiConsole.MarkupLine(
-                $"[red]Please update '[bold]{displayName}[/]' from version [bold]{version}[/] to [bold]{minVersion}[/] or later.[/]");
+                $"[red]Please update '[bold]{displayName}[/]' from version [bold]{version}[/] to [bold]{minVersion}[/] or later.[/]"
+            );
 
             return false;
         }
 
         // If the version could not be determined please change the logic here to check for the correct version
         AnsiConsole.MarkupLine(
-            $"[red]Command '[bold]{command}[/]' is installed but version could not be determined. Please update the CLI to check for correct version.[/]");
+            $"[red]Command '[bold]{command}[/]' is installed but version could not be determined. Please update the CLI to check for correct version.[/]"
+        );
 
         return false;
     }
@@ -137,7 +123,8 @@ public static class PrerequisitesChecker
         if (!output.Contains(workloadName))
         {
             AnsiConsole.MarkupLine(
-                $"[red].NET '[bold]{displayName}[/]' should be installed. Please run '[bold]dotnet workload update[/]' and then '[bold]dotnet workload install {workloadName}[/]'.[/]");
+                $"[red].NET '[bold]{displayName}[/]' should be installed. Please run '[bold]dotnet workload update[/]' and then '[bold]dotnet workload install {workloadName}[/]'.[/]"
+            );
 
             return false;
         }
@@ -147,7 +134,7 @@ public static class PrerequisitesChecker
 
            Installed Workload Id      Manifest Version                     Installation Source
            -----------------------------------------------------------------------------------
-           aspire                     8.0.0-preview.4.24156.9/8.0.100     SDK 8.0.200
+           aspire                     8.0.0-preview.5.24201.12/8.0.100     SDK 8.0.200
 
            Use `dotnet workload search` to find additional workloads to install.
          */
@@ -157,34 +144,12 @@ public static class PrerequisitesChecker
         {
             // If the version could not be determined please change the logic here to check for the correct version
             AnsiConsole.MarkupLine(
-                $"[red].NET '[bold]{displayName}[/]' is installed but not in the expected version. Please run '[bold]dotnet workload update[/]'.[/]");
+                $"[red].NET '[bold]{displayName}[/]' is installed but not in the expected version. Please run '[bold]dotnet workload update[/]'.[/]"
+            );
 
             return false;
         }
 
         return true;
-    }
-
-    private static bool IsEnvironmentVariableSet(string variableName)
-    {
-        if (Environment.GetEnvironmentVariable(variableName) is not null) return true;
-
-
-        if (Configuration.IsMacOs)
-        {
-            var fileContent = File.ReadAllText(Configuration.MacOs.GetShellInfo().ProfilePath);
-
-            if (fileContent.Contains($"export {variableName}"))
-            {
-                AnsiConsole.MarkupLine(
-                    $"[red]'{variableName}' is configured but not available. Please run '[bold]source ~/{Configuration.MacOs.GetShellInfo().ProfileName}[/] and restart the terminal'[/]");
-                return false;
-            }
-        }
-
-        AnsiConsole.MarkupLine(
-            $"[red]'{variableName}' is not configured. Please run '[bold]{Configuration.AliasName} {ConfigureDeveloperEnvironmentCommand.CommandName}[/] and restart the terminal'[/]");
-
-        return false;
     }
 }

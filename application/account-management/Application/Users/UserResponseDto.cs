@@ -1,6 +1,5 @@
 namespace PlatformPlatform.AccountManagement.Application.Users;
 
-[UsedImplicitly]
 public sealed record UserResponseDto(
     string Id,
     DateTimeOffset CreatedAt,
@@ -9,5 +8,6 @@ public sealed record UserResponseDto(
     UserRole UserRole,
     string FirstName,
     string LastName,
-    bool EmailConfirmed
+    bool EmailConfirmed,
+    string? AvatarUrl
 );

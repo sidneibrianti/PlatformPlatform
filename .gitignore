@@ -137,6 +137,7 @@ _ReSharper*/
 # Rider
 .idea
 result.xml
+result.json
 
 # TeamCity is a build add-in
 _TeamCity*
@@ -357,6 +358,9 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 
+# WSL VS Code
+.mono/
+
 # BeatPulse healthcheck temp database
 healthchecksdb
 
@@ -383,6 +387,7 @@ FodyWeavers.xsd
 **/*.generated.d.ts
 **/*.generated.ts
 **/Api/swagger.json
+**/lib/api/Api.json
 
 # Frontend builds
 .swc/

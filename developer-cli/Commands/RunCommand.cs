@@ -17,18 +17,19 @@ public class RunCommand : Command
 
     private void Execute()
     {
-        PrerequisitesChecker.Check("docker", "aspire", "node", "yarn", "SQL_SERVER_PASSWORD", "CERTIFICATE_PASSWORD");
+        PrerequisitesChecker.Check("docker", "aspire", "node", "yarn");
 
         var workingDirectory = Path.Combine(Configuration.GetSourceCodeFolder(), "..", "application", "AppHost");
 
         Task.Run(async () =>
-        {
-            // Start a background task that monitors the websites and opens the browser when ready
-            const int aspireDashboardPort = 8001;
-            await StartBrowserWhenSiteIsReady(aspireDashboardPort);
-            const int accountManagementPort = 8443;
-            await StartBrowserWhenSiteIsReady(accountManagementPort);
-        });
+            {
+                // Start a background task that monitors the websites and opens the browser when ready
+                const int aspireDashboardPort = 9001;
+                await StartBrowserWhenSiteIsReady(aspireDashboardPort);
+                const int appPort = 9000;
+                await StartBrowserWhenSiteIsReady(appPort);
+            }
+        );
 
         ProcessHelper.StartProcess("dotnet run", workingDirectory);
     }

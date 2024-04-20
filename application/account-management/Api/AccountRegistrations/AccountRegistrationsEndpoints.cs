@@ -1,29 +1,28 @@
 using PlatformPlatform.AccountManagement.Application.AccountRegistrations;
 using PlatformPlatform.AccountManagement.Domain.AccountRegistrations;
 using PlatformPlatform.SharedKernel.ApiCore.ApiResults;
+using PlatformPlatform.SharedKernel.ApiCore.Endpoints;
 
 namespace PlatformPlatform.AccountManagement.Api.AccountRegistrations;
 
-public static class AccountRegistrationsEndpoints
+public class AccountRegistrationsEndpoints : IEndpoints
 {
     private const string RoutesPrefix = "/api/account-registrations";
-
-    public static void MapAccountRegistrationsEndpoints(this IEndpointRouteBuilder routes)
+    
+    public void MapEndpoints(IEndpointRouteBuilder routes)
     {
-        var group = routes.MapGroup(RoutesPrefix);
-
-        group.MapGet("/is-subdomain-free",
-            async Task<ApiResult<bool>> ([AsParameters] IsSubdomainFreeQuery query, ISender mediator)
-                => await mediator.Send(query));
-
+        var group = routes.MapGroup(RoutesPrefix).WithTags("AccountRegistrations");
+        
+        group.MapGet("/is-subdomain-free", async Task<ApiResult<bool>> ([AsParameters] IsSubdomainFreeQuery query, ISender mediator)
+            => await mediator.Send(query)
+        );
+        
         group.MapPost("/start", async Task<ApiResult> (StartAccountRegistrationCommand command, ISender mediator)
-            => (await mediator.Send(command)).AddResourceUri(RoutesPrefix));
-
-        group.MapPost("{id}/complete", async Task<ApiResult> (
-                AccountRegistrationId id,
-                CompleteAccountRegistrationCommand command,
-                ISender mediator
-            )
-            => await mediator.Send(command with { Id = id }));
+            => (await mediator.Send(command)).AddResourceUri(RoutesPrefix)
+        );
+        
+        group.MapPost("{id}/complete", async Task<ApiResult> (AccountRegistrationId id, CompleteAccountRegistrationCommand command, ISender mediator)
+            => await mediator.Send(command with { Id = id })
+        );
     }
 }

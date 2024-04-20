@@ -12,12 +12,12 @@ public sealed class AccountRegistrationBlocked(int retryCount)
     : TelemetryEvent(nameof(AccountRegistrationBlocked), ("RetryCount", retryCount.ToString()));
 
 public sealed class AccountRegistrationCompleted(TenantId tenantId, TenantState state, int registrationTimeInSeconds)
-    : TelemetryEvent(nameof(AccountRegistrationCompleted), ("TenantId", tenantId), ("TenantState", state.ToString()),
-        ("RegistrationTimeInSeconds", registrationTimeInSeconds.ToString()));
+    : TelemetryEvent(nameof(AccountRegistrationCompleted),
+        ("TenantId", tenantId), ("TenantState", state.ToString()), ("RegistrationTimeInSeconds", registrationTimeInSeconds.ToString())
+    );
 
 public sealed class AccountRegistrationExpired(int secondsFromCreation)
-    : TelemetryEvent(nameof(AccountRegistrationExpired),
-        ("SecondsFromCreation", secondsFromCreation.ToString()));
+    : TelemetryEvent(nameof(AccountRegistrationExpired), ("SecondsFromCreation", secondsFromCreation.ToString()));
 
 public sealed class AccountRegistrationFailed(int retryCount)
     : TelemetryEvent(nameof(AccountRegistrationFailed), ("RetryCount", retryCount.ToString()));
@@ -31,11 +31,17 @@ public sealed class TenantDeleted(TenantId tenantId, TenantState tenantState)
 public sealed class TenantUpdated(TenantId tenantId)
     : TelemetryEvent(nameof(TenantUpdated), ("TenantId", tenantId));
 
-public sealed class UserCreated(TenantId tenantId)
-    : TelemetryEvent(nameof(UserCreated), ("TenantId", tenantId));
+public sealed class UserCreated(TenantId tenantId, bool gravatarProfileFound)
+    : TelemetryEvent(nameof(UserCreated), ("TenantId", tenantId), ("GravatarProfileFound", gravatarProfileFound.ToString()));
 
 public sealed class UserDeleted()
     : TelemetryEvent(nameof(UserDeleted));
 
 public sealed class UserUpdated()
     : TelemetryEvent(nameof(UserUpdated));
+
+public sealed class UserAvatarUpdated(string contentType, long size)
+    : TelemetryEvent(nameof(UserAvatarUpdated), ("ContentType", contentType), ("Size", size.ToString()));
+
+public sealed class UserAvatarRemoved()
+    : TelemetryEvent(nameof(UserAvatarUpdated));

@@ -10,17 +10,15 @@ public static class Configuration
 {
     public static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     public static readonly bool IsMacOs = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+    public static readonly bool IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
-    private static readonly string UserFolder =
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-    public static readonly string LocalhostPfx = IsWindows ? Windows.LocalhostPfxWindows : MacOs.LocalhostPfxMacOs;
+    private static readonly string UserFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
     public static readonly string PublishFolder = IsWindows
-        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "PlatformPlatform")
-        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".PlatformPlatform");
+        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"PlatformPlatform")
+        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),".PlatformPlatform");
+
+    public static readonly string AliasName = Assembly.GetExecutingAssembly().GetName().Name!;
 
     private static string ConfigFile => Path.Combine(PublishFolder, $"{AliasName}.json");
 
@@ -61,13 +59,11 @@ public static class Configuration
         if (IsDebugMode)
         {
             Directory.Delete(PublishFolder, true);
-            AnsiConsole.MarkupLine(
-                $"[red]Invalid configuration. The {PublishFolder} has been deleted. Please try again.[/]");
+            AnsiConsole.MarkupLine($"[red]Invalid configuration. The {PublishFolder} has been deleted. Please try again.[/]");
         }
         else
         {
-            AnsiConsole.MarkupLine(
-                "[red]Invalid configuration. Please run `dotnet run` from the `/developer-cli` folder of PlatformPlatform.[/]");
+            AnsiConsole.MarkupLine("[red]Invalid configuration. Please run `dotnet run` from the `/developer-cli` folder of PlatformPlatform.[/]");
         }
 
         Environment.Exit(1);
@@ -118,13 +114,9 @@ public static class Configuration
 
     public static class MacOs
     {
-        public static readonly string LocalhostPfxMacOs = $"{UserFolder}/.aspnet/https/localhost.pfx";
-
-        private static string CliPath =>
-            Path.Combine(PublishFolder, new FileInfo(Environment.ProcessPath!).Name);
+        private static string CliPath => Path.Combine(PublishFolder, new FileInfo(Environment.ProcessPath!).Name);
 
         private static string AliasLineRepresentation => $"alias {AliasName}='{CliPath}'";
-
 
         internal static bool IsAliasRegisteredMacOs()
         {
@@ -150,16 +142,7 @@ public static class Configuration
 
         public static void DeleteAlias()
         {
-            DeleteLineFromProfile(AliasLineRepresentation);
-        }
-
-        public static void DeleteEnvironmentVariable(string variableName)
-        {
-            DeleteLineFromProfile($"export {variableName}='{Environment.GetEnvironmentVariable(variableName)}'");
-        }
-
-        private static void DeleteLineFromProfile(string lineRepresentation)
-        {
+            var lineRepresentation = AliasLineRepresentation;
             var profilePath = GetShellInfo().ProfilePath;
             var tempFilePath = profilePath + ".tmp";
             var linesToKeep = File.ReadLines(profilePath).Where(l => !l.Contains(lineRepresentation)).ToArray();
@@ -186,8 +169,6 @@ public static class Configuration
             return (shellName, profileName, profilePath);
         }
     }
-
-    public static readonly string AliasName = Assembly.GetExecutingAssembly().GetName().Name!;
 }
 
 public class ConfigurationSetting
@@ -203,9 +184,7 @@ public class ConfigurationSetting
         {
             if (string.IsNullOrEmpty(SourceCodeFolder)) return false;
 
-            if (string.IsNullOrEmpty(Hash)) return false;
-
-            return true;
+            return !string.IsNullOrEmpty(Hash);
         }
     }
 }
