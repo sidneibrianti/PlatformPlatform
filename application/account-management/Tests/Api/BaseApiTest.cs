@@ -21,7 +21,7 @@ public abstract class BaseApiTests<TContext> : BaseTest<TContext> where TContext
     protected BaseApiTests()
     {
         Environment.SetEnvironmentVariable(WebAppMiddlewareConfiguration.PublicUrlKey, "https://localhost:9000");
-        Environment.SetEnvironmentVariable(WebAppMiddlewareConfiguration.CdnUrlKey, "https://localhost:9099");
+        Environment.SetEnvironmentVariable(WebAppMiddlewareConfiguration.CdnUrlKey, "https://localhost:9101");
         
         _webApplicationFactory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
@@ -136,6 +136,13 @@ public abstract class BaseApiTests<TContext> : BaseTest<TContext> where TContext
         {
             problemDetails.Extensions["traceId"]!.ToString().Should().NotBeEmpty();
         }
+    }
+    
+    protected async Task<T?> DeserializeResponse<T>(HttpResponseMessage response)
+    {
+        var responseStream = await response.Content.ReadAsStreamAsync();
+        
+        return await JsonSerializer.DeserializeAsync<T>(responseStream, JsonSerializerOptions);
     }
     
     private async Task<ProblemDetails?> DeserializeProblemDetails(HttpResponseMessage response)

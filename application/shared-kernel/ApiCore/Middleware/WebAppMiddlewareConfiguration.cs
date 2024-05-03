@@ -13,7 +13,10 @@ public class WebAppMiddlewareConfiguration
     public const string CdnUrlKey = "CDN_URL";
     private const string PublicKeyPrefix = "PUBLIC_";
     private const string ApplicationVersionKey = "APPLICATION_VERSION";
+    
+    public static readonly string HtmlTemplatePath = Path.Combine(GetWebAppDistRoot("WebApp", "dist"), "index.html");
     private readonly string[] _publicAllowedKeys = [CdnUrlKey, ApplicationVersionKey];
+    private string? _htmlTemplate;
     
     public WebAppMiddlewareConfiguration(IOptions<JsonOptions> jsonOptions, bool isDevelopment)
     {
@@ -35,8 +38,6 @@ public class WebAppMiddlewareConfiguration
         VerifyRuntimeEnvironment(StaticRuntimeEnvironment);
         
         BuildRootPath = GetWebAppDistRoot("WebApp", "dist");
-        HtmlTemplate = ReadHtmlTemplate(GetHtmlTemplatePath(), isDevelopment);
-        
         PermissionPolicies = GetPermissionsPolicies();
         ContentSecurityPolicies = GetContentSecurityPolicies(isDevelopment);
     }
@@ -47,8 +48,6 @@ public class WebAppMiddlewareConfiguration
     
     public string BuildRootPath { get; }
     
-    public string HtmlTemplate { get; }
-    
     public Dictionary<string, string> StaticRuntimeEnvironment { get; }
     
     public string StaticRuntimeEnvironmentEncoded { get; }
@@ -56,6 +55,22 @@ public class WebAppMiddlewareConfiguration
     public StringValues PermissionPolicies { get; }
     
     public string ContentSecurityPolicies { get; }
+    
+    public string GetHtmlTemplate()
+    {
+        if (_htmlTemplate is not null)
+        {
+            return _htmlTemplate;
+        }
+        
+        if (!File.Exists(HtmlTemplatePath))
+        {
+            throw new FileNotFoundException("index.html does not exist.", HtmlTemplatePath);
+        }
+        
+        _htmlTemplate = File.ReadAllText(HtmlTemplatePath, new UTF8Encoding());
+        return _htmlTemplate;
+    }
     
     private static string GetWebAppDistRoot(string webAppProjectName, string webAppDistRootName)
     {
@@ -71,31 +86,6 @@ public class WebAppMiddlewareConfiguration
         }
         
         return Path.Join(directoryInfo!.FullName, webAppProjectName, webAppDistRootName);
-    }
-    
-    public static string GetHtmlTemplatePath()
-    {
-        var buildRootPath = GetWebAppDistRoot("WebApp", "dist");
-        return Path.Combine(buildRootPath, "index.html");
-    }
-    
-    private string ReadHtmlTemplate(string htmlTemplatePath, bool isDevelopment)
-    {
-        if (isDevelopment)
-        {
-            for (var i = 0; i < 10; i++)
-            {
-                if (File.Exists(htmlTemplatePath)) break;
-                Thread.Sleep(TimeSpan.FromSeconds(1));
-            }
-        }
-        
-        if (!File.Exists(htmlTemplatePath))
-        {
-            throw new FileNotFoundException("index.html does not exist.", htmlTemplatePath);
-        }
-        
-        return File.ReadAllText(htmlTemplatePath, new UTF8Encoding());
     }
     
     private StringValues GetPermissionsPolicies()
