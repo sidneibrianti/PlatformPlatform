@@ -12,15 +12,24 @@ public class CodeCleanupCommand : Command
 {
     public CodeCleanupCommand() : base("code-cleanup", "Run JetBrains Code Cleanup")
     {
+        var solutionNameOption = new Option<string?>(
+            ["<solution-name>", "--solution-name", "-s"],
+            "The name of the self-contained system to build"
+        );
+
+        AddOption(solutionNameOption);
+
         Handler = CommandHandler.Create(Execute);
     }
 
-    private int Execute()
+    private int Execute(string? solutionName)
     {
-        var workingDirectory = Path.Combine(Configuration.GetSourceCodeFolder(), "..", "application");
+        PrerequisitesChecker.Check("dotnet");
 
-        ProcessHelper.StartProcess("dotnet tool restore", workingDirectory);
-        ProcessHelper.StartProcess("dotnet jb cleanupcode PlatformPlatform.sln --profile=\".NET only\"", workingDirectory);
+        var solutionFile = SolutionHelper.GetSolution(solutionName);
+
+        ProcessHelper.StartProcess("dotnet tool restore", solutionFile.Directory!.FullName);
+        ProcessHelper.StartProcess($"dotnet jb cleanupcode {solutionFile.Name} --profile=\".NET only\"", solutionFile.Directory!.FullName);
 
         AnsiConsole.MarkupLine("[green]Code cleanup completed. Check Git to see any changes![/]");
 

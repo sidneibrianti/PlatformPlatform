@@ -2,6 +2,7 @@ param name string
 param location string
 param tags object
 param containerRegistryName string
+param environmentResourceGroupName string
 param keyVaultName string
 
 resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
@@ -10,16 +11,14 @@ resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@
   tags: tags
 }
 
-var containerRegistryResourceGroupName = 'shared'
 module containerRegistryPermission './role-assignments-container-registry-acr-pull.bicep' = {
-  name: 'container-registry-permission'
-  scope: resourceGroup(subscription().subscriptionId, containerRegistryResourceGroupName)
+  name: '${name}-permission'
+  scope: resourceGroup(subscription().subscriptionId, environmentResourceGroupName)
   params: {
     containerRegistryName: containerRegistryName
     principalId: userAssignedIdentity.properties.principalId
   }
 }
-
 
 resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
   name: keyVaultName
@@ -31,6 +30,7 @@ resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: keyVault
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleDefinitionId)
+    principalType: 'ServicePrincipal'
     principalId: userAssignedIdentity.properties.principalId
   }
 }

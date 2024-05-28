@@ -2,7 +2,8 @@
 
 <h4 align="center">
 
-[![PlatformPlatform](https://github.com/platformplatform/PlatformPlatform/actions/workflows/application.yml/badge.svg)](https://github.com/platformplatform/PlatformPlatform/actions/workflows/application.yml?query=branch%3Amain)
+[![AppGateway](https://github.com/platformplatform/PlatformPlatform/actions/workflows/app-gateway.yml/badge.svg)](https://github.com/platformplatform/PlatformPlatform/actions/workflows/app-gateway.yml?query=branch%3Amain)
+[![AccountManagement](https://github.com/platformplatform/PlatformPlatform/actions/workflows/account-management.yml/badge.svg)](https://github.com/platformplatform/PlatformPlatform/actions/workflows/account-management.yml?query=branch%3Amain)
 [![GitHub issues with enhancement label](https://img.shields.io/github/issues-raw/platformplatform/PlatformPlatform/enhancement?label=enhancements&logo=github&color=%23A2EEEF)](https://github.com/orgs/PlatformPlatform/projects/1/views/3?filterQuery=-status%3A%22%E2%9C%85+Done%22+label%3Aenhancement)
 [![GitHub issues with roadmap label](https://img.shields.io/github/issues-raw/platformplatform/PlatformPlatform/roadmap?label=roadmap&logo=github&color=%23006B75)](https://github.com/orgs/PlatformPlatform/projects/2/views/2?filterQuery=is%3Aopen+label%3Aroadmap)
 [![GitHub issues with bug label](https://img.shields.io/github/issues-raw/platformplatform/PlatformPlatform/bug?label=bugs&logo=github&color=red)](https://github.com/platformplatform/PlatformPlatform/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
@@ -166,16 +167,14 @@ Our clean commit history serves as a great learning and troubleshooting resource
 
 ## 2. Run the Aspire AppHost to spin up everything on localhost
 
-To spin up the backend, frontend and all dependencies like SQL Server, Blob Storage, Mail Server in Docker, simply open the [PlatformPlatform](/application/PlatformPlatform.sln) solution in Rider or Visual Studio and run the [Aspire AppHost](/application/AppHost/AppHost.csproj) project.
-
-With Docker Desktop installed, .NET Aspire will do all the orchestration and spin up everything with a single click. No need to learn Docker, install database and web server, or to learn complicated commands. It just works 🎉
-
-If you prefer the CLI, you can run the following command:
+Using .NET Aspire, docker images with SQL Server, Blob Storage, and mail server will be downloaded and started. No need install anything, or learn complicated commands. Simply run this command, and everything just works 🎉
 
 ```bash
-cd application/AppHost
-dotnet run
+cd developer-cli
+dotnet run dev # First run will be slow as Docker images are downloaded
 ```
+
+Alternatively, open the [PlatformPlatform](/application/PlatformPlatform.sln) solution in Rider or Visual Studio and run the [Aspire AppHost](/application/AppHost/AppHost.csproj) project.
 
 ## 3. Set up CI/CD with passwordless deployments from GitHub to Azure
 
@@ -216,7 +215,7 @@ PlatformPlatform is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) contain
 │  │   └─ Tests          # Tests for the API, Application, Domain, and Infrastructure
 │  ├─ shared-kernel      # Reusable components for all self-contained systems
 │  ├─ [saas-scs]         # [Your SCS] Create your SaaS product as a self-contained system
-│  └─ [back-office]      # [Planned] A self-contained system for operations and support
+│  └─ back-office        # A self-contained system for operations and support (empty for now)
 ├─ cloud-infrastructure  # Contains Bash and Bicep scripts (IaC) for Azure resources
 │  ├─ cluster            # Scale units like production-west-eu, production-east-us, etc.
 │  ├─ environment        # Shared resources like App Insights for all Production clusters
