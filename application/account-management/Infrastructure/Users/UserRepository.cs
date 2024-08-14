@@ -11,12 +11,12 @@ internal sealed class UserRepository(AccountManagementDbContext accountManagemen
     {
         return !await DbSet.AnyAsync(u => u.TenantId == tenantId && u.Email == email, cancellationToken);
     }
-    
+
     public Task<int> CountTenantUsersAsync(TenantId tenantId, CancellationToken cancellationToken)
     {
         return DbSet.CountAsync(u => u.TenantId == tenantId, cancellationToken);
     }
-    
+
     public async Task<(User[] Users, int TotalItems, int TotalPages)> Search(
         string? search,
         UserRole? userRole,
@@ -28,18 +28,22 @@ internal sealed class UserRepository(AccountManagementDbContext accountManagemen
     )
     {
         IQueryable<User> users = DbSet;
-        
+
         if (search is not null)
         {
             // Concatenate first and last name to enable searching by full name
-            users = users.Where(u => u.Email.Contains(search) || (u.FirstName + " " + u.LastName).Contains(search));
+            users = users.Where(u =>
+                u.Email.Contains(search) ||
+                (u.FirstName + " " + u.LastName).Contains(search) ||
+                (u.Title ?? "").Contains(search)
+            );
         }
-        
+
         if (userRole is not null)
         {
-            users = users.Where(u => u.UserRole == userRole);
+            users = users.Where(u => u.Role == userRole);
         }
-        
+
         users = orderBy switch
         {
             SortableUserProperties.CreatedAt => sortOrder == SortOrder.Ascending
@@ -54,20 +58,20 @@ internal sealed class UserRepository(AccountManagementDbContext accountManagemen
             SortableUserProperties.Email => sortOrder == SortOrder.Ascending
                 ? users.OrderBy(u => u.Email)
                 : users.OrderByDescending(u => u.Email),
-            SortableUserProperties.UserRole => sortOrder == SortOrder.Ascending
-                ? users.OrderBy(u => u.UserRole)
-                : users.OrderByDescending(u => u.UserRole),
+            SortableUserProperties.Role => sortOrder == SortOrder.Ascending
+                ? users.OrderBy(u => u.Role)
+                : users.OrderByDescending(u => u.Role),
             _ => users
         };
-        
+
         pageSize ??= 50;
         var itemOffset = (pageOffset ?? 0) * pageSize.Value;
         var result = await users.Skip(itemOffset).Take(pageSize.Value).ToArrayAsync(cancellationToken);
-        
+
         var totalItems = pageOffset == 0 && result.Length < pageSize
             ? result.Length // If the first page returns fewer items than page size, skip querying the total count
             : await users.CountAsync(cancellationToken);
-        
+
         var totalPages = (totalItems - 1) / pageSize.Value + 1;
         return (result, totalItems, totalPages);
     }

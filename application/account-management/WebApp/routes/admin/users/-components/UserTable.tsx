@@ -1,104 +1,179 @@
-import { EllipsisVerticalIcon, TrashIcon } from "lucide-react";
+import { EllipsisVerticalIcon, Trash2Icon, UserIcon } from "lucide-react";
 import type { SortDescriptor } from "react-aria-components";
-import { TableBody } from "react-aria-components";
-import { useMemo, useState } from "react";
-import { rows } from "./data";
-import { Cell, Column, Row, Table, TableHeader } from "@/ui/components/Table";
-import Badge from "@/ui/components/Badge";
-import Pagination from "@/ui/components/Pagination";
+import { MenuTrigger, TableBody } from "react-aria-components";
+import { useCallback, useState } from "react";
+import { Cell, Column, Row, Table, TableHeader } from "@repo/ui/components/Table";
+import { Badge } from "@repo/ui/components/Badge";
+import { Pagination } from "@repo/ui/components/Pagination";
+import { Popover } from "@repo/ui/components/Popover";
+import { Menu, MenuItem, MenuSeparator } from "@repo/ui/components/Menu";
+import { Button } from "@repo/ui/components/Button";
+import { Avatar } from "@repo/ui/components/Avatar";
+import { SortOrder, SortableUserProperties, useApi } from "@/shared/lib/api/client";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 
 export function UserTable() {
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "name",
-    direction: "ascending",
+  const navigate = useNavigate();
+  const { orderBy, pageOffset, sortOrder } = useSearch({ strict: false });
+
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>(() => ({
+    column: orderBy,
+    direction: sortOrder === "Ascending" ? "ascending" : "descending"
+  }));
+
+  const { data } = useApi("/api/account-management/users", {
+    params: {
+      query: {
+        PageOffset: pageOffset,
+        OrderBy: orderBy,
+        SortOrder: sortOrder
+      }
+    }
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
-  const sortedRows = useMemo(() => {
-    // eslint-disable-next-line ts/ban-ts-comment
-    // @ts-expect-error
-    const items = rows.slice().sort((a, b) => a[sortDescriptor.column].localeCompare(b[sortDescriptor.column]));
-    if (sortDescriptor.direction === "descending")
-      items.reverse();
+  const handlePageChange = useCallback(
+    (pageOffset: number) => {
+      navigate({
+        search: (prev) => ({
+          ...prev,
+          pageOffset: pageOffset
+        })
+      });
+    },
+    [navigate]
+  );
 
-    return items;
-  }, [sortDescriptor]);
+  const handleSortChange = useCallback(
+    (newSortDescriptor: SortDescriptor) => {
+      console.log(newSortDescriptor);
+      setSortDescriptor(newSortDescriptor);
+      navigate({
+        search: (prev) => ({
+          ...prev,
+          orderBy: (newSortDescriptor.column?.toString() ?? "Name") as SortableUserProperties,
+          sortOrder: newSortDescriptor.direction === "ascending" ? SortOrder.Ascending : SortOrder.Descending
+        })
+      });
+    },
+    [navigate]
+  );
 
-  const paginatedRows = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return sortedRows.slice(startIndex, endIndex);
-  }, [sortedRows, currentPage]);
+  const currentPage = (data?.currentPageOffset ?? 0) + 1;
 
   return (
-    <div>
-      <div className="mb-4 w-full min-w-64 overflow-x-auto">
-        <Table selectionMode="multiple" sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor}>
-          <TableHeader>
-            <Column minWidth={100} allowsSorting id="name" isRowHeader>
-              Name
-            </Column>
-            <Column minWidth={100} allowsSorting id="email">
-              Email
-            </Column>
-            <Column defaultWidth={130} allowsSorting id="date">
-              Added
-            </Column>
-            <Column defaultWidth={130} allowsSorting id="lastSeen">
-              Last Seen
-            </Column>
-            <Column defaultWidth={100} allowsSorting id="type">
-              Role
-            </Column>
-            <Column width={80}>
-              Actions
-            </Column>
-          </TableHeader>
-          <TableBody>
-            {paginatedRows.map(user => (
-              <Row key={user.email}>
-                <Cell>
-                  <div className="flex h-14 items-center">
-                    {user.profilePicture
-                      ? (
-                        <img src={user.profilePicture} alt="User avatar" className="mr-2 w-10 h-10 rounded-full bg-transparent" />
-                        )
-                      : (
-                        <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-gray-200 mr-2 flex items-center justify-center text-sm font-semibold uppercase">AB</div>
-                        )}
+    <div className="flex flex-col gap-2 h-full w-full">
+      <Table
+        selectionMode="multiple"
+        selectionBehavior="toggle"
+        sortDescriptor={sortDescriptor}
+        onSortChange={handleSortChange}
+        aria-label="Users"
+      >
+        <TableHeader>
+          <Column minWidth={50} defaultWidth={200} allowsSorting id={SortableUserProperties.Name} isRowHeader>
+            Name
+          </Column>
+          <Column minWidth={50} allowsSorting id={SortableUserProperties.Email}>
+            Email
+          </Column>
+          <Column minWidth={55} allowsSorting id={SortableUserProperties.CreatedAt}>
+            Added
+          </Column>
+          <Column minWidth={55} allowsSorting id={SortableUserProperties.ModifiedAt}>
+            Last Seen
+          </Column>
+          <Column minWidth={75} allowsSorting id={SortableUserProperties.Role}>
+            Role
+          </Column>
+          <Column minWidth={114} defaultWidth={114}>
+            Actions
+          </Column>
+        </TableHeader>
+        <TableBody>
+          {data?.users.map((user) => (
+            <Row key={user.id}>
+              <Cell>
+                <div className="flex h-14 items-center gap-2">
+                  <Avatar
+                    initials={getInitials(user.firstName, user.lastName, user.email)}
+                    avatarUrl={user.avatarUrl}
+                    size="sm"
+                    isRound
+                  />
+                  <div className="flex flex-col truncate">
                     <div className="truncate">
-                      {user.name}
-                      <br />
-                      <span className="text-gray-500">{user.title}</span>
+                      {user.firstName} {user.lastName}
                     </div>
+                    <div className="text-muted-foreground truncate">{user.title ?? ""}</div>
                   </div>
-                </Cell>
-                <Cell><span className="text-gray-500">{user.email}</span></Cell>
-                <Cell><span className="text-gray-500">{user.added.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</span></Cell>
-                <Cell><span className="text-gray-500">{user.lastSeen.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</span></Cell>
-                <Cell><Badge>{user.role}</Badge></Cell>
-                <Cell>
-                  <div className="flex gap-8">
-                    <button type="button" className="group-hover:visible invisible">
-                      <TrashIcon size={16} />
-                    </button>
-                    <button type="button">
-                      <EllipsisVerticalIcon size={16} />
-                    </button>
-                  </div>
-                </Cell>
-              </Row>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+                </div>
+              </Cell>
+              <Cell>{user.email}</Cell>
+              <Cell>{toFormattedDate(user.createdAt)}</Cell>
+              <Cell>{toFormattedDate(user.modifiedAt)}</Cell>
+              <Cell>
+                <Badge variant="outline">Member</Badge>
+              </Cell>
+              <Cell>
+                <div className="group flex gap-2 w-full">
+                  <Button
+                    variant="icon"
+                    className="group-hover:opacity-100 opacity-0 duration-300 transition-opacity ease-in-out"
+                  >
+                    <Trash2Icon className="w-4 h-4" />
+                  </Button>
+                  <MenuTrigger>
+                    <Button variant="icon" aria-label="Menu">
+                      <EllipsisVerticalIcon className="w-4 h-4" />
+                    </Button>
+                    <Popover>
+                      <Menu>
+                        <MenuItem onAction={() => alert("open")}>
+                          <UserIcon className="w-4 h-4" />
+                          View Profile
+                        </MenuItem>
+                        <MenuSeparator />
+                        <MenuItem onAction={() => alert("rename")}>
+                          <Trash2Icon className="w-4 h-4 text-destructive" />
+                          <span className="text-destructive">Delete</span>
+                        </MenuItem>
+                      </Menu>
+                    </Popover>
+                  </MenuTrigger>
+                </div>
+              </Cell>
+            </Row>
+          ))}
+        </TableBody>
+      </Table>
       <Pagination
-        total={rows.length}
-        itemsPerPage={itemsPerPage}
+        size={5}
         currentPage={currentPage}
-        onPageChange={setCurrentPage}
+        totalPages={data?.totalPages ?? 1}
+        onPageChange={handlePageChange}
+        className="w-full pr-12 sm:hidden"
+      />
+      <Pagination
+        size={7}
+        nextLabel="Next"
+        previousLabel="Previous"
+        currentPage={currentPage}
+        totalPages={data?.totalPages ?? 1}
+        onPageChange={handlePageChange}
+        className="hidden sm:flex w-full"
       />
     </div>
   );
+}
+
+function toFormattedDate(input: string | undefined | null) {
+  if (!input) return "";
+  const date = new Date(input);
+  return date.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
+function getInitials(firstName: string | undefined, lastName: string | undefined, email: string | undefined) {
+  if (firstName && lastName) return `${firstName[0]}${lastName[0]}`;
+  if (email == null) return "";
+  return email.split("@")[0].slice(0, 2).toUpperCase();
 }

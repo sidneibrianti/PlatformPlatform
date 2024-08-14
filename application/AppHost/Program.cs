@@ -19,6 +19,13 @@ var azureStorage = builder
             resourceBuilder.WithBlobPort(10000);
         }
     )
+    .WithAnnotation(new ContainerImageAnnotation
+        {
+            Registry = "mcr.microsoft.com",
+            Image = "azure-storage/azurite",
+            Tag = "latest"
+        }
+    )
     .AddBlobs("blobs");
 
 builder
@@ -31,15 +38,14 @@ var accountManagementDatabase = sqlServer
 
 CreateBlobContainer("avatars");
 
+var frontendBuild = builder
+    .AddNpmApp("frontend-build", "../")
+    .WithEnvironment("CERTIFICATE_PASSWORD", certificatePassword);
+
 var accountManagementApi = builder
     .AddProject<AccountManagement_Api>("account-management-api")
     .WithReference(accountManagementDatabase)
     .WithReference(azureStorage);
-
-var accountManagementSpa = builder
-    .AddNpmApp("account-management-spa", "../account-management/WebApp", "dev")
-    .WithReference(accountManagementApi)
-    .WithEnvironment("CERTIFICATE_PASSWORD", certificatePassword);
 
 builder
     .AddProject<AccountManagement_Workers>("account-management-workers")
@@ -54,11 +60,6 @@ var backOfficeApi = builder
     .WithReference(backOfficeDatabase)
     .WithReference(azureStorage);
 
-var backOfficeSpa = builder
-    .AddNpmApp("back-office-spa", "../back-office/WebApp", "dev")
-    .WithReference(backOfficeApi)
-    .WithEnvironment("CERTIFICATE_PASSWORD", certificatePassword);
-
 builder
     .AddProject<BackOffice_Workers>("back-office-workers")
     .WithReference(backOfficeDatabase)
@@ -66,10 +67,9 @@ builder
 
 builder
     .AddProject<AppGateway>("app-gateway")
+    .WithReference(frontendBuild)
     .WithReference(accountManagementApi)
-    .WithReference(accountManagementSpa)
-    .WithReference(backOfficeApi)
-    .WithReference(backOfficeSpa);
+    .WithReference(backOfficeApi);
 
 builder.Build().Run();
 
@@ -78,7 +78,7 @@ return;
 void CreateBlobContainer(string containerName)
 {
     var connectionString = builder.Configuration.GetConnectionString("blob-storage");
-    
+
     new Task(() =>
         {
             var blobServiceClient = new BlobServiceClient(connectionString);

@@ -7,15 +7,19 @@ on:
     paths:
       - "application/*"
       - "application/shared-kernel/**"
+      - "application/shared-webapp/**"
       - "application/account-management/**"
       - ".github/workflows/account-management.yml"
+      - ".github/workflows/_deploy-container.yml"
       - "!**.md"
   pull_request:
     paths:
       - "application/*"
       - "application/shared-kernel/**"
+      - "application/shared-webapp/**"
       - "application/account-management/**"
       - ".github/workflows/account-management.yml"
+      - ".github/workflows/_deploy-container.yml"
       - "!**.md"
   workflow_dispatch:
 
@@ -50,7 +54,7 @@ jobs:
 
       - name: Install Node modules
         working-directory: application
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4
@@ -90,32 +94,37 @@ jobs:
             dotnet sonarscanner end /d:sonar.login="${SONAR_TOKEN}"
           fi
 
+      - name: Build frontend artifacts
+        if: github.ref == 'refs/heads/main'
+        working-directory: application
+        run: npm run build
+
       - name: Publish frontend artifacts
-        if:   github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         working-directory: application/account-management/WebApp
-        run: yarn run publish
+        run: npm run publish
 
       - name: Publish API build
-        if:   github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         working-directory: application/account-management
         run: |
           dotnet publish ./Api/AccountManagement.Api.csproj --no-restore --configuration Release --output ./Api/publish /p:Version=${{ steps.generate_version.outputs.version }}
 
       - name: Save API artifacts
-        if:   github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: account-management-api
           path: application/account-management/Api/publish/**/*
 
       - name: Publish Worker build
-        if:   github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         working-directory: application/account-management
         run: |
           dotnet publish ./Workers/AccountManagement.Workers.csproj --no-restore --configuration Release --output ./Workers/publish /p:Version=${{ steps.generate_version.outputs.version }}
 
       - name: Save Workers artifacts
-        if:   github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: account-management-workers
@@ -137,7 +146,7 @@ jobs:
 
       - name: Install Node modules
         working-directory: application
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4
@@ -182,16 +191,12 @@ jobs:
           }
 
       - name: Build frontend artifacts
-        working-directory: application/account-management/WebApp
-        run: yarn run build
+        working-directory: application
+        run: npm run build
 
-      - name: Run ESLint
+      - name: Run check
         working-directory: application/account-management/WebApp
-        run: yarn run lint
-
-      - name: Run Type Checking
-        working-directory: application/account-management/WebApp
-        run: yarn run typechecking
+        run: npm run check
 
   api-deploy:
     name: Deploy API

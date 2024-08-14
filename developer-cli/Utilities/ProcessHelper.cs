@@ -12,7 +12,23 @@ public static class ProcessHelper
         using var process = Process.Start(processStartInfo)!;
         process.WaitForExit();
     }
-    
+
+    public static void OpenBrowser(string url)
+    {
+        if (Configuration.IsWindows)
+        {
+            StartProcess($"start {url}");
+        }
+        else if (Configuration.IsMacOs)
+        {
+            StartProcess($"open {url}");
+        }
+        else if (Configuration.IsLinux)
+        {
+            StartProcess($"xdg-open {url}");
+        }
+    }
+
     public static string StartProcess(
         string command,
         string? solutionFolder = null,
@@ -23,7 +39,7 @@ public static class ProcessHelper
         var processStartInfo = CreateProcessStartInfo(command, solutionFolder, redirectOutput);
         return StartProcess(processStartInfo, waitForExit: waitForExit);
     }
-    
+
     private static ProcessStartInfo CreateProcessStartInfo(
         string command,
         string? solutionFolder,
@@ -43,15 +59,15 @@ public static class ProcessHelper
             UseShellExecute = useShellExecute,
             CreateNoWindow = createNoWindow
         };
-        
+
         if (solutionFolder is not null)
         {
             processStartInfo.WorkingDirectory = solutionFolder;
         }
-        
+
         return processStartInfo;
     }
-    
+
     public static string StartProcess(ProcessStartInfo processStartInfo, string? input = null, bool waitForExit = true)
     {
         if (Configuration.VerboseLogging)
@@ -59,24 +75,24 @@ public static class ProcessHelper
             var escapedArguments = Markup.Escape(processStartInfo.Arguments);
             AnsiConsole.MarkupLine($"[cyan]{processStartInfo.FileName} {escapedArguments}[/]");
         }
-        
+
         var process = Process.Start(processStartInfo)!;
         if (input is not null)
         {
             process.StandardInput.WriteLine(input);
             process.StandardInput.Close();
         }
-        
+
         var output = string.Empty;
         if (processStartInfo.RedirectStandardOutput) output += process.StandardOutput.ReadToEnd();
         if (processStartInfo.RedirectStandardError) output += process.StandardError.ReadToEnd();
-        
+
         if (!waitForExit) return string.Empty;
         process.WaitForExit();
-        
+
         return output;
     }
-    
+
     public static bool IsProcessRunning(string process)
     {
         return Process.GetProcessesByName(process).Length > 0;

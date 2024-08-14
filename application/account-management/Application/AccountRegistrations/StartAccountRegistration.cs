@@ -12,7 +12,7 @@ using PlatformPlatform.SharedKernel.ApplicationCore.Validation;
 namespace PlatformPlatform.AccountManagement.Application.AccountRegistrations;
 
 public sealed record StartAccountRegistrationCommand(string Subdomain, string Email)
-    : ICommand, IRequest<Result<AccountRegistrationId>>
+    : ICommand, IRequest<Result<StartAccountRegistrationResponse>>
 {
     public TenantId GetTenantId()
     {
@@ -20,14 +20,16 @@ public sealed record StartAccountRegistrationCommand(string Subdomain, string Em
     }
 }
 
+public sealed record StartAccountRegistrationResponse(string AccountRegistrationId, int ValidForSeconds);
+
 public sealed class StartAccountRegistrationValidator : AbstractValidator<StartAccountRegistrationCommand>
 {
     public StartAccountRegistrationValidator(ITenantRepository tenantRepository)
     {
         RuleFor(x => x.Subdomain).NotEmpty();
         RuleFor(x => x.Subdomain)
-            .Matches("^[a-z0-9]{3,30}$")
-            .WithMessage("Subdomain must be between 3-30 alphanumeric and lowercase characters.")
+            .Matches("^(?=.{3,30}$)[a-z0-9]+(?:-[a-z0-9]+)*$")
+            .WithMessage("Subdomain must be between 3 to 30 lowercase letters, numbers, or hyphens.")
             .MustAsync(tenantRepository.IsSubdomainFreeAsync)
             .WithMessage("The subdomain is not available.")
             .When(x => !string.IsNullOrEmpty(x.Subdomain));
@@ -40,32 +42,32 @@ public sealed class StartAccountRegistrationCommandHandler(
     IEmailService emailService,
     IPasswordHasher<object> passwordHasher,
     ITelemetryEventsCollector events
-) : IRequestHandler<StartAccountRegistrationCommand, Result<AccountRegistrationId>>
+) : IRequestHandler<StartAccountRegistrationCommand, Result<StartAccountRegistrationResponse>>
 {
-    public async Task<Result<AccountRegistrationId>> Handle(StartAccountRegistrationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<StartAccountRegistrationResponse>> Handle(StartAccountRegistrationCommand command, CancellationToken cancellationToken)
     {
         var existingAccountRegistrations
             = accountRegistrationRepository.GetByEmailOrTenantId(command.GetTenantId(), command.Email);
-        
+
         if (existingAccountRegistrations.Any(r => !r.HasExpired()))
         {
-            return Result<AccountRegistrationId>.Conflict(
+            return Result<StartAccountRegistrationResponse>.Conflict(
                 "Account registration for this subdomain/mail has already been started. Please check your spam folder."
             );
         }
-        
+
         if (existingAccountRegistrations.Count(r => r.CreatedAt > TimeProvider.System.GetUtcNow().AddDays(-1)) > 3)
         {
-            return Result<AccountRegistrationId>.TooManyRequests("Too many attempts to register this email address. Please try again later.");
+            return Result<StartAccountRegistrationResponse>.TooManyRequests("Too many attempts to register this email address. Please try again later.");
         }
-        
+
         var oneTimePassword = GenerateOneTimePassword(6);
         var oneTimePasswordHash = passwordHasher.HashPassword(this, oneTimePassword);
         var accountRegistration = AccountRegistration.Create(command.GetTenantId(), command.Email, oneTimePasswordHash);
-        
+
         await accountRegistrationRepository.AddAsync(accountRegistration, cancellationToken);
         events.CollectEvent(new AccountRegistrationStarted(command.GetTenantId()));
-        
+
         await emailService.SendAsync(accountRegistration.Email, "Confirm your email address",
             $"""
              <h1 style="text-align:center;font-family=sans-serif;font-size:20px">Your confirmation code is below</h1>
@@ -74,10 +76,10 @@ public sealed class StartAccountRegistrationCommandHandler(
              """,
             cancellationToken
         );
-        
-        return accountRegistration.Id;
+
+        return new StartAccountRegistrationResponse(accountRegistration.Id, accountRegistration.GetValidForSeconds());
     }
-    
+
     public static string GenerateOneTimePassword(int length)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -86,7 +88,7 @@ public sealed class StartAccountRegistrationCommandHandler(
         {
             oneTimePassword.Append(chars[RandomNumberGenerator.GetInt32(chars.Length)]);
         }
-        
+
         return oneTimePassword.ToString();
     }
 }

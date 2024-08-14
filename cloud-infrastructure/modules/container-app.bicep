@@ -13,6 +13,7 @@ param minReplicas int = 1
 param maxReplicas int = 3
 param userAssignedIdentityName string
 param ingress bool
+param hasProbesEndpoint bool
 param domainName string = ''
 param isDomainConfigured bool = false
 param external bool = false
@@ -93,6 +94,58 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-02-preview' = {
             memory: memory
           }
           env: environmentVariables
+          probes: hasProbesEndpoint && containerImageTag != 'initial' // The quickstart image does not have liveness and readiness probes
+            ? [
+                {
+                  type: 'Liveness'
+                  httpGet: {
+                    path: '/internal-api/live'
+                    port: 8080
+                    scheme: 'HTTP'
+                  }
+                  initialDelaySeconds: 3
+                  failureThreshold: 3
+                  periodSeconds: 5
+                  successThreshold: 1
+                  timeoutSeconds: 1
+                }
+                {
+                  type: 'Readiness'
+                  httpGet: {
+                    path: '/internal-api/ready'
+                    port: 8080
+                    scheme: 'HTTP'
+                  }
+                  initialDelaySeconds: 3
+                  failureThreshold: 3
+                  periodSeconds: 6
+                  successThreshold: 1
+                  timeoutSeconds: 5
+                }
+              ]
+            : [
+                {
+                  type: 'Liveness'
+                  failureThreshold: 3
+                  periodSeconds: 10
+                  successThreshold: 1
+                  tcpSocket: {
+                    port: 8080
+                  }
+                  timeoutSeconds: 1
+                }
+                {
+                  type: 'Readiness'
+                  failureThreshold: 48
+                  initialDelaySeconds: 3
+                  periodSeconds: 5
+                  successThreshold: 1
+                  tcpSocket: {
+                    port: 8080
+                  }
+                  timeoutSeconds: 5
+                }
+              ]
         }
       ]
       revisionSuffix: revisionSuffix
@@ -125,3 +178,5 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-02-preview' = {
     }
   }
 }
+
+output containerAppUrl string = containerApp.properties.configuration.ingress != null ? containerApp.properties.configuration.ingress.fqdn : ''

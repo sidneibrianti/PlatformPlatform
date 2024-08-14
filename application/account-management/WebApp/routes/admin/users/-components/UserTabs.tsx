@@ -1,13 +1,28 @@
-import Badge from "@/ui/components/Badge";
-import { Tab, TabList, Tabs } from "@/ui/components/Tabs";
+import { useApi } from "@/shared/lib/api/client";
+import { Badge } from "@repo/ui/components/Badge";
+import { Tab, TabList, Tabs } from "@repo/ui/components/Tabs";
 
 export function UserTabs() {
+  const { data } = useApi("/api/account-management/users", {
+    params: {
+      query: {
+        PageSize: 1
+      }
+    }
+  });
+
   return (
-    <Tabs className="border-b-2 border-gray-200 whitespace-nowrap">
-      <TabList aria-label="User Categories" className="relative items-center">
-        <Tab id="allUsers" className="pb-2 gap-2">All Users <Badge variant="secondary">50</Badge></Tab>
-        <Tab id="invitedUsers" className="pb-2 gap-2">Invited Users <Badge variant="secondary">50</Badge></Tab>
-        <Tab id="userGroups" className="pb-2 gap-2">User Groups <Badge variant="secondary">50</Badge></Tab>
+    <Tabs>
+      <TabList aria-label="User Categories">
+        <Tab id="allUsers" href="/admin/users">
+          All Users <Badge variant="secondary">{data?.totalCount}</Badge>
+        </Tab>
+        <Tab id="invitedUsers" href="/admin/users">
+          Invited Users <Badge variant="secondary">2</Badge>
+        </Tab>
+        <Tab id="userGroups" href="/admin/users">
+          User Groups <Badge variant="secondary">5</Badge>
+        </Tab>
       </TabList>
     </Tabs>
   );

@@ -1,0 +1,126 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-12-15 20:50+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en-US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"X-Generator: @lingui/cli\n"
+
+#. js-lingui-explicit-id
+msgid "yourname@example.com"
+msgstr "yourname@example.com"
+
+#. js-lingui-explicit-id
+msgid "Email"
+msgstr "Email"
+
+#. js-lingui-explicit-id
+msgid "Subdomain"
+msgstr "Subdomain"
+
+#. js-lingui-explicit-id
+msgid "subdomain"
+msgstr "subdomain"
+
+#. js-lingui-explicit-id
+msgid "Region"
+msgstr "Region"
+
+#. js-lingui-explicit-id
+msgid "This is the region where your data is stored"
+msgstr "This is the region where your data is stored"
+
+#. js-lingui-explicit-id
+msgid "Screenshots of the dashboard project showing mobile versions"
+msgstr "Screenshots of the dashboard project showing mobile versions"
+
+#. js-lingui-explicit-id
+msgid "Screenshots of the dashboard project showing desktop and mobile versions"
+msgstr "Screenshots of the dashboard project showing desktop and mobile versions"
+
+#. js-lingui-explicit-id
+#~ msgid "Account registration is not started."
+#~ msgstr "Account registration is not started."
+
+#. js-lingui-explicit-id
+#~ msgid "An error occured when trying to complete Account registration."
+#~ msgstr "An error occured when trying to complete Account registration."
+
+msgid "Active Users"
+msgstr "Active Users"
+
+msgid "Active users the past 30 days"
+msgstr "Active users the past 30 days"
+
+msgid "Add more in the Users menu"
+msgstr "Add more in the Users menu"
+
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
+msgid "Can't find your code? Check your spam folder"
+msgstr "Can't find your code? Check your spam folder"
+
+#~ msgid "Continue"
+#~ msgstr "Continue"
+
+#~ msgid "Create your account"
+#~ msgstr "Create your account"
+
+msgid "Didn't receive the code? Resend"
+msgstr "Didn't receive the code? Resend"
+
+#~ msgid "Don't have an account?"
+#~ msgstr "Don't have an account?"
+
+#~ msgid "Email"
+#~ msgstr "Email"
+
+#~ msgid "Enter your email below to log in."
+#~ msgstr "Enter your email below to log in."
+
+msgid "Enter your verification code"
+msgstr "Enter your verification code"
+
+msgid "Filters"
+msgstr "Filters"
+
+msgid "Here’s your overview of what’s going on."
+msgstr "Here’s your overview of what’s going on."
+
+#~ msgid "Hi! Welcome back"
+#~ msgstr "Hi! Welcome back"
+
+msgid "Log in"
+msgstr "Log in"
+
+msgid "Please check your email for a verification code sent to <0>{email}</0>"
+msgstr "Please check your email for a verification code sent to <0>{email}</0>"
+
+#~ msgid "Region"
+#~ msgstr "Region"
+
+#~ msgid "Sign up"
+#~ msgstr "Sign up"
+
+#~ msgid "Subdomain"
+#~ msgstr "Subdomain"
+
+#~ msgid "This is the region where your data is stored"
+#~ msgstr "This is the region where your data is stored"
+
+msgid "Total Users"
+msgstr "Total Users"
+
+msgid "Verify"
+msgstr "Verify"
+
+msgid "Welcome home"
+msgstr "Welcome home"

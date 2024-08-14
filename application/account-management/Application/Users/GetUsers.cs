@@ -9,7 +9,7 @@ public sealed record GetUsersQuery(
     UserRole? UserRole = null,
     SortableUserProperties OrderBy = SortableUserProperties.Name,
     SortOrder SortOrder = SortOrder.Ascending,
-    int? PageSize = null,
+    int PageSize = 10,
     int? PageOffset = null
 ) : IRequest<Result<GetUsersResponseDto>>;
 
@@ -27,8 +27,8 @@ public sealed class GetUsersHandler(IUserRepository userRepository)
             query.PageOffset,
             cancellationToken
         );
-        
+
         var userResponseDtos = users.Adapt<UserResponseDto[]>();
-        return new GetUsersResponseDto(count, totalPages, query.PageOffset ?? 0, userResponseDtos);
+        return new GetUsersResponseDto(count, query.PageSize, totalPages, query.PageOffset ?? 0, userResponseDtos);
     }
 }

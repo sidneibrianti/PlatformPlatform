@@ -9,6 +9,7 @@ on:
       - "application/shared-kernel/**"
       - "application/AppGateway/**"
       - ".github/workflows/app-gateway.yml"
+      - ".github/workflows/_deploy-container.yml"
       - "!**.md"
   pull_request:
     paths:
@@ -16,6 +17,7 @@ on:
       - "application/shared-kernel/**"
       - "application/AppGateway/**"
       - ".github/workflows/app-gateway.yml"
+      - ".github/workflows/_deploy-container.yml"
       - "!**.md"
   workflow_dispatch:
 
@@ -50,7 +52,7 @@ jobs:
 
       - name: Install Node modules
         working-directory: application
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4
@@ -73,13 +75,13 @@ jobs:
           dotnet build PlatformPlatform.sln --no-restore /p:Version=${{ steps.generate_version.outputs.version }}
 
       - name: Publish build
-        if:   github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         working-directory: application
         run: |
           dotnet publish ./AppGateway/AppGateway.csproj --no-restore --configuration Release --output ./AppGateway/publish /p:Version=${{ steps.generate_version.outputs.version }}
 
       - name: Save artifacts
-        if:   github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: app-gateway
@@ -101,7 +103,7 @@ jobs:
 
       - name: Install Node modules
         working-directory: application
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4

@@ -131,7 +131,6 @@ var publicUrl = isCustomDomainSet
   : 'https://${appGatewayContainerAppName}.${containerAppsEnvironment.outputs.defaultDomainName}'
 var cdnUrl = publicUrl
 
-
 // Account Management
 
 var accountManagementIdentityName = '${resourceGroupName}-account-management'
@@ -233,7 +232,8 @@ module accountManagementWorkers '../modules/container-app.bicep' = {
     minReplicas: 0
     maxReplicas: 3
     userAssignedIdentityName: accountManagementIdentityName
-    ingress: false
+    ingress: true
+    hasProbesEndpoint: false
     environmentVariables: accountManagementEnvironmentVariables
   }
   dependsOn: [accountManagementDatabase, accountManagementIdentity, communicationService]
@@ -258,11 +258,11 @@ module accountManagementApi '../modules/container-app.bicep' = {
     maxReplicas: 3
     userAssignedIdentityName: accountManagementIdentityName
     ingress: true
+    hasProbesEndpoint: true
     environmentVariables: accountManagementEnvironmentVariables
   }
   dependsOn: [accountManagementDatabase, accountManagementIdentity, communicationService, accountManagementWorkers]
 }
-
 
 // Back Office
 
@@ -359,7 +359,8 @@ module backOfficeWorkers '../modules/container-app.bicep' = {
     minReplicas: 0
     maxReplicas: 1
     userAssignedIdentityName: backOfficeIdentityName
-    ingress: false
+    ingress: true
+    hasProbesEndpoint: false
     environmentVariables: backOfficeEnvironmentVariables
   }
   dependsOn: [backOfficeDatabase, backOfficeIdentity, communicationService]
@@ -384,6 +385,7 @@ module backOfficeApi '../modules/container-app.bicep' = {
     maxReplicas: 1
     userAssignedIdentityName: backOfficeIdentityName
     ingress: true
+    hasProbesEndpoint: true
     environmentVariables: backOfficeEnvironmentVariables
   }
   dependsOn: [backOfficeDatabase, backOfficeIdentity, communicationService, backOfficeWorkers]
@@ -425,6 +427,7 @@ module appGateway '../modules/container-app.bicep' = {
     maxReplicas: 3
     userAssignedIdentityName: appGatewayIdentityName
     ingress: true
+    hasProbesEndpoint: false
     domainName: domainName == '' ? '' : domainName
     isDomainConfigured: domainName != '' && isDomainConfigured
     external: true

@@ -1,12 +1,10 @@
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
-using JetBrains.Annotations;
 using PlatformPlatform.DeveloperCli.Installation;
 using PlatformPlatform.DeveloperCli.Utilities;
 
 namespace PlatformPlatform.DeveloperCli.Commands;
 
-[UsedImplicitly]
 public class BuildCommand : Command
 {
     public BuildCommand() : base("build", "Builds a self-contained system")
@@ -15,20 +13,20 @@ public class BuildCommand : Command
             ["<solution-name>", "--solution-name", "-s"],
             "The name of the self-contained system to build"
         );
-        
+
         AddOption(solutionNameOption);
-        
+
         Handler = CommandHandler.Create<string?>(Execute);
     }
-    
+
     private int Execute(string? solutionName)
     {
-        PrerequisitesChecker.Check("dotnet", "aspire", "node", "yarn");
-        
+        PrerequisitesChecker.Check("dotnet", "aspire", "node");
+
         var solutionFile = SolutionHelper.GetSolution(solutionName);
-        
+
         ProcessHelper.StartProcess($"dotnet build {solutionFile.Name}", solutionFile.Directory?.FullName);
-        
+
         return 0;
     }
 }

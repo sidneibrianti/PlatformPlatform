@@ -1,12 +1,10 @@
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
-using JetBrains.Annotations;
 using PlatformPlatform.DeveloperCli.Installation;
 using PlatformPlatform.DeveloperCli.Utilities;
 
 namespace PlatformPlatform.DeveloperCli.Commands;
 
-[UsedImplicitly]
 public class TestCommand : Command
 {
     public TestCommand() : base("test", "Runs tests from a solution")
@@ -15,20 +13,20 @@ public class TestCommand : Command
             ["<solution-name>", "--solution-name", "-s"],
             "The name of the solution file containing the tests to run"
         );
-        
+
         AddOption(solutionNameOption);
-        
+
         Handler = CommandHandler.Create<string?>(Execute);
     }
-    
+
     private int Execute(string? solutionName)
     {
         PrerequisitesChecker.Check("dotnet");
-        
+
         var solutionFile = SolutionHelper.GetSolution(solutionName);
-        
+
         ProcessHelper.StartProcess($"dotnet test {solutionFile.Name}", solutionFile.Directory?.FullName);
-        
+
         return 0;
     }
 }

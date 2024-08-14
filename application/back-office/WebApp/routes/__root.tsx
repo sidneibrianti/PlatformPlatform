@@ -1,22 +1,25 @@
-import { Outlet, createRootRoute, useNavigate } from "@tanstack/react-router";
-import { ErrorPage } from "./-components/ErrorPage";
-import { NotFound } from "./-components/NotFoundPage";
-import { ReactAriaRouterProvider } from "@/lib/router/ReactAriaRouterProvider";
-import { AuthenticationProvider } from "@/lib/auth/AuthenticationProvider";
+import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { ErrorPage } from "@repo/infrastructure/errorComponents/ErrorPage";
+import { NotFound } from "@repo/infrastructure/errorComponents/NotFoundPage";
+import { AuthenticationProvider } from "@repo/infrastructure/auth/AuthenticationProvider";
+import { ReactAriaRouterProvider } from "@repo/infrastructure/router/ReactAriaRouterProvider";
+import { ThemeModeProvider } from "@repo/ui/theme/mode/ThemeMode";
 
 export const Route = createRootRoute({
   component: Root,
   errorComponent: ErrorPage,
-  notFoundComponent: NotFound,
+  notFoundComponent: NotFound
 });
 
 function Root() {
   const navigate = useNavigate();
   return (
-    <ReactAriaRouterProvider>
-      <AuthenticationProvider navigate={options => navigate(options)} afterSignIn="/" afterSignOut="/">
-        <Outlet />
-      </AuthenticationProvider>
-    </ReactAriaRouterProvider>
+    <ThemeModeProvider>
+      <ReactAriaRouterProvider>
+        <AuthenticationProvider navigate={(options) => navigate(options)} afterLogIn="/" afterLogOut="/">
+          <Outlet />
+        </AuthenticationProvider>
+      </ReactAriaRouterProvider>
+    </ThemeModeProvider>
   );
 }
