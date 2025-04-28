@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <AssemblyName>PlatformPlatform.AppGateway</AssemblyName>
         <RootNamespace>PlatformPlatform.AppGateway</RootNamespace>
         <Nullable>enable</Nullable>
@@ -10,11 +10,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.OpenApi" />
+        <PackageReference Include="Microsoft.OpenApi.Readers" />
+        <PackageReference Include="Scalar.AspNetCore" />
         <PackageReference Include="Yarp.ReverseProxy" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\shared-kernel\InfrastructureCore\SharedKernel.InfrastructureCore.csproj" />
+        <ProjectReference Include="..\shared-kernel\SharedKernel\SharedKernel.csproj" />
     </ItemGroup>
 
 </Project>

@@ -31,8 +31,8 @@
   },
   "githubIssues.issueBranchTitle": "${issueNumber}-${sanitizedLowercaseIssueTitle}",
   "githubPullRequests.assignCreated": "${user}",
-  "dotnet.defaultSolution": "application/PlatformPlatform.sln",
-  "biome.lspBin": "./application/node_modules/.bin/workspace-biome",
+  "dotnet.defaultSolution": "application/PlatformPlatform.slnx",
+  "biome.lspBin": "./application/node_modules/.bin/biome",
   "biome.searchInPath": false,
   "biome.enabled": true,
 }

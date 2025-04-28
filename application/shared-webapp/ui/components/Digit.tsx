@@ -50,19 +50,24 @@ export function Digit({
       id={id}
       tabIndex={tabIndex}
       type="text"
-      inputMode="numeric"
+      inputMode={digitPattern === DigitPattern.Digits ? "numeric" : "text"}
       pattern={inputPattern}
       maxLength={1}
       value={value}
       onChange={() => {}}
       onKeyUp={(e) => {
-        if (e.key === "Backspace") onChange("");
-        else if (isCharValid.test(e.key)) onChange(e.key);
+        if (e.key === "Backspace") {
+          onChange("");
+        } else if (isCharValid.test(e.key)) {
+          onChange(e.key);
+        }
       }}
       onPaste={(e) => {
         e.preventDefault();
         const text = e.clipboardData.getData("text");
-        if (isStringValid.test(text)) onChange(text);
+        if (isStringValid.test(text)) {
+          onChange(text);
+        }
       }}
       autoComplete={autoComplete}
       className={digitStyles({ className, isFocusVisible })}

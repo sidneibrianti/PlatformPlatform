@@ -7,10 +7,7 @@ namespace PlatformPlatform.DeveloperCli.Commands;
 
 public class UninstallCommand : Command
 {
-    public UninstallCommand() : base(
-        "uninstall",
-        $"Will remove the {Configuration.AliasName} CLI alias."
-    )
+    public UninstallCommand() : base("uninstall", $"Will remove the {Configuration.AliasName} CLI alias")
     {
         Handler = CommandHandler.Create(Execute);
     }
@@ -19,7 +16,7 @@ public class UninstallCommand : Command
     {
         if (Configuration.IsWindows && !Configuration.IsDebugMode)
         {
-            AnsiConsole.MarkupLine($"[yellow]Please run 'dotnet run uninstall' from {Configuration.GetSourceCodeFolder()}.[/]");
+            AnsiConsole.MarkupLine($"[yellow]Please run 'dotnet run uninstall' from {Configuration.CliFolder}.[/]");
             Environment.Exit(0);
         }
 

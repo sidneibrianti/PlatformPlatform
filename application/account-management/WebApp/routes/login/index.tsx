@@ -1,24 +1,44 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { HorizontalHeroLayout } from "@/shared/layouts/HorizontalHeroLayout";
 import { ErrorMessage } from "@/shared/components/ErrorMessage";
-
-import { Button } from "@repo/ui/components/Button";
-import { Form } from "@repo/ui/components/Form";
-import { Heading } from "@repo/ui/components/Heading";
-import { Link } from "@repo/ui/components/Link";
 import logoMarkUrl from "@/shared/images/logo-mark.svg";
 import poweredByUrl from "@/shared/images/powered-by.svg";
-import { type AuthenticationState, useLogInAction } from "@repo/infrastructure/auth/hooks";
+import { HorizontalHeroLayout } from "@/shared/layouts/HorizontalHeroLayout";
+import { api } from "@/shared/lib/api/client";
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { loggedInPath, signUpPath } from "@repo/infrastructure/auth/constants";
+import { useIsAuthenticated } from "@repo/infrastructure/auth/hooks";
+import { Button } from "@repo/ui/components/Button";
+import { Form } from "@repo/ui/components/Form";
+import { FormErrorMessage } from "@repo/ui/components/FormErrorMessage";
+import { Heading } from "@repo/ui/components/Heading";
+import { Link } from "@repo/ui/components/Link";
 import { TextField } from "@repo/ui/components/TextField";
-import { useFormState } from "react-dom";
-import { useLingui } from "@lingui/react";
+import { mutationSubmitter } from "@repo/ui/forms/mutationSubmitter";
+import { Navigate, createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { setLoginState } from "./-shared/loginState";
 
 export const Route = createFileRoute("/login/")({
-  component: () => (
-    <HorizontalHeroLayout>
-      <LoginForm />
-    </HorizontalHeroLayout>
-  ),
+  validateSearch: (search) => {
+    const returnPath = search.returnPath as string | undefined;
+    // Only allow paths starting with / to prevent open redirect attacks to external domains
+    return {
+      returnPath: returnPath?.startsWith("/") ? returnPath : undefined
+    };
+  },
+  component: function LoginRoute() {
+    const isAuthenticated = useIsAuthenticated();
+
+    if (isAuthenticated) {
+      return <Navigate to={loggedInPath} />;
+    }
+
+    return (
+      <HorizontalHeroLayout>
+        <LoginForm />
+      </HorizontalHeroLayout>
+    );
+  },
   errorComponent: (props) => (
     <HorizontalHeroLayout>
       <ErrorMessage {...props} />
@@ -27,41 +47,62 @@ export const Route = createFileRoute("/login/")({
 });
 
 export function LoginForm() {
-  const logInAction = useLogInAction();
-  const { i18n } = useLingui();
-  const initialState: AuthenticationState = { message: null, errors: {} };
+  const [email, setEmail] = useState("");
+  const { returnPath } = Route.useSearch();
 
-  const [state, action] = useFormState(logInAction, initialState);
+  const startLoginMutation = api.useMutation("post", "/api/account-management/authentication/login/start");
+
+  if (startLoginMutation.isSuccess) {
+    const { loginId, emailConfirmationId, validForSeconds } = startLoginMutation.data;
+
+    setLoginState({
+      loginId,
+      emailConfirmationId,
+      email,
+      expireAt: new Date(Date.now() + validForSeconds * 1000)
+    });
+
+    return <Navigate to="/login/verify" search={{ returnPath }} />;
+  }
 
   return (
     <Form
-      action={action}
-      validationErrors={state.errors}
+      onSubmit={mutationSubmitter(startLoginMutation)}
+      validationErrors={startLoginMutation.error?.errors}
       validationBehavior="aria"
       className="flex w-full max-w-sm flex-col items-center gap-4 space-y-3 px-6 pt-8 pb-4"
     >
       <Link href="/">
-        <img src={logoMarkUrl} className="h-12 w-12" alt="logo mark" />
+        <img src={logoMarkUrl} className="h-12 w-12" alt={t`Logo`} />
       </Link>
-      <Heading className="text-2xl">Hi! Welcome back</Heading>
-      <div className="text-center text-muted-foreground text-sm">Enter your email below to sign in</div>
+      <Heading className="text-2xl">
+        <Trans>Hi! Welcome back</Trans>
+      </Heading>
+      <div className="text-center text-muted-foreground text-sm">
+        <Trans>Enter your email below to log in</Trans>
+      </div>
       <TextField
-        type="email"
         name="email"
-        label="Email"
+        type="email"
+        label={t`Email`}
+        autoFocus={true}
+        isRequired={true}
+        value={email}
+        onChange={setEmail}
         autoComplete="email webauthn"
-        autoFocus
-        isRequired
-        placeholder={i18n.t("yourname@example.com")}
+        placeholder={t`yourname@example.com`}
         className="flex w-full flex-col"
       />
-      <Button type="submit" className="mt-4 w-full text-center">
-        Continue
+      <FormErrorMessage error={startLoginMutation.error} />
+      <Button type="submit" isDisabled={startLoginMutation.isPending} className="mt-4 w-full text-center">
+        <Trans>Continue</Trans>
       </Button>
-      <p className="text-muted-foreground text-xs">
-        Don't have an account? <Link href="/register">Create one</Link>
-      </p>
-      <img src={poweredByUrl} alt="powered by" />
+      <div className="text-muted-foreground text-sm">
+        <Trans>
+          Don't have an account? <Link href={signUpPath}>Create one</Link>
+        </Trans>
+      </div>
+      <img src={poweredByUrl} alt={t`Powered by`} />
     </Form>
   );
 }

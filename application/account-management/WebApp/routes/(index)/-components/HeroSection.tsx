@@ -1,53 +1,52 @@
-import { DialogTrigger } from "react-aria-components";
-import { ArrowRightIcon, ChevronDownIcon, GithubIcon } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import logoMark from "@/shared/images/logo-mark.svg";
+import { t } from "@lingui/core/macro";
+import { LoginButton } from "@repo/infrastructure/auth/LoginButton";
+import { SignUpButton } from "@repo/infrastructure/auth/SignUpButton";
+import { Badge } from "@repo/ui/components/Badge";
 import { Button } from "@repo/ui/components/Button";
-import { Popover } from "@repo/ui/components/Popover";
 import { Dialog } from "@repo/ui/components/Dialog";
 import { Link } from "@repo/ui/components/Link";
+import { Popover } from "@repo/ui/components/Popover";
 import { ThemeModeSelector } from "@repo/ui/theme/ThemeModeSelector";
-import { Badge } from "@repo/ui/components/Badge";
-
-const logoWrap = "https://platformplatformgithub.blob.core.windows.net/logo-wrap.svg?url";
-const heroimgDesktop = "https://platformplatformgithub.blob.core.windows.net/hero-image-desktop.png";
-const heroimgMobile = "https://platformplatformgithub.blob.core.windows.net/hero-image-mobile.webp";
+import { ArrowRightIcon, ChevronDownIcon, GithubIcon } from "lucide-react";
+import type React from "react";
+import { DialogTrigger } from "react-aria-components";
+import { heroDesktopUrl, heroMobileUrl, logoWrap } from "./cdnImages";
 
 // HeroSection: A functional component that displays the hero section
 export function HeroSection() {
-  const navigate = useNavigate();
   return (
-    <div className="flex flex-col bg-muted">
-      <div className="flex flex-col gap-2 md:flex-row justify-between pt-8 pb-24 xl:px-24 px-2">
-        <div className="flex flex-col grow justify-start gap-2 md:gap-4 lg:gap-8 lg:justify-start md:flex-row items-center ">
-          <img src={logoWrap} alt="author" />
+    <div className="flex flex-col items-center bg-muted">
+      <div className="flex w-fit flex-col-reverse items-center justify-between gap-4 px-2 pt-8 pb-24 md:w-full md:flex-row md:gap-2 xl:px-24">
+        <div className="flex pt-4 md:pt-0">
+          <img className="hidden lg:block" src={logoWrap} alt="logo" />
+          <img className="h-20 md:h-12 lg:hidden" src={logoMark} alt="logo" />
+        </div>
+        <div className="flex flex-col items-center justify-start gap-2 sm:flex-row md:gap-4 lg:gap-8">
           <ProductLink />
           <ResourcesLink />
           <DocumentationLink />
+        </div>
+        <div className="flex w-full items-center justify-between gap-2 md:w-fit md:gap-4">
           <Link href="https://github.com/platformplatform/PlatformPlatform">
             <GithubIcon className="wmax-5 h-5" />
             <span className="md:hidden lg:inline">Github</span>
           </Link>
-          <ThemeModeSelector />
-        </div>
-        <div className="flex flex-col md:gap-4 md:flex-row items-center">
-          <Button onPress={() => navigate({ to: "/login" })} variant="ghost">
-            Log in
-          </Button>
-          <Button onPress={() => navigate({ to: "/register" })} variant="primary">
-            Sign up
-          </Button>
+          <ThemeModeSelector aria-label={t`Toggle theme`} />
+          <LoginButton variant="ghost">Log in</LoginButton>
+          <SignUpButton variant="primary">Get started today</SignUpButton>
         </div>
       </div>
-      <div className="flex flex-col items-center gap-4 py-12 px-8 md:px-48 text-center">
+      <div className="flex flex-col items-center gap-4 px-8 py-12 text-center md:px-48">
         <FeatureTag />
         <ProductSubtitle />
         <ProductTitle />
         <ProductDescription />
         <ActionButtons />
       </div>
-      <div className=" px-24 justify-center flex">
-        <img className="hidden md:block" src={heroimgDesktop} alt="Footer" />
-        <img className="md:hidden" src={heroimgMobile} alt="Footer" />
+      <div className=" flex justify-center px-24">
+        <img className="hidden rounded-t-2xl md:block" src={heroDesktopUrl} alt="Footer" />
+        <img className="md:hidden" src={heroMobileUrl} alt="Footer" />
       </div>
     </div>
   );
@@ -109,7 +108,7 @@ function TopLink({ title, children }: Readonly<TopLinkProps>) {
 
 function FeatureTag() {
   return (
-    <Button variant="primary" className="rounded-xl px-2 gap-2">
+    <Button variant="primary" className="gap-2 rounded-xl px-2">
       <Badge variant="secondary">New feature</Badge>
       PassKeys are here
       <ArrowRightIcon className="h-4 w-4" />
@@ -119,14 +118,14 @@ function FeatureTag() {
 
 function ProductTitle() {
   return (
-    <h3 className="text-4xl font-semibold md:text-6xl">
+    <h3 className="font-semibold text-4xl md:text-6xl">
       Launch your product in minutes - on the best Open Source platform
     </h3>
   );
 }
 
 function ProductSubtitle() {
-  return <h4 className="text-muted-foreground text-base font-semibold ">Super. Simple. SaaS.</h4>;
+  return <h4 className="font-semibold text-base text-muted-foreground ">Super. Simple. SaaS.</h4>;
 }
 
 function ProductDescription() {
@@ -138,13 +137,10 @@ function ProductDescription() {
 }
 
 function ActionButtons() {
-  const navigate = useNavigate();
   return (
     <div className="flex justify-center gap-4">
       <Button variant="outline">Book a demo</Button>
-      <Button onPress={() => navigate({ to: "/register" })} variant="primary">
-        Get started today
-      </Button>
+      <SignUpButton variant="primary">Get started today</SignUpButton>
     </div>
   );
 }

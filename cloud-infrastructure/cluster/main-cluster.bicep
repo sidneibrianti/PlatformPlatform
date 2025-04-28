@@ -12,19 +12,19 @@ param appGatewayVersion string
 param accountManagementVersion string
 param backOfficeVersion string
 param applicationInsightsConnectionString string
-param communicatoinServicesDataLocation string = 'europe'
+param communicationServicesDataLocation string = 'europe'
 param mailSenderDisplayName string = 'PlatformPlatform'
 
 var storageAccountUniquePrefix = replace(resourceGroupName, '-', '')
 var tags = { environment: environment, 'managed-by': 'bicep' }
 
-resource clusterResourceGroup 'Microsoft.Resources/resourceGroups@2023-07-01' = {
+resource clusterResourceGroup 'Microsoft.Resources/resourceGroups@2024-11-01' = {
   name: resourceGroupName
   location: location
   tags: tags
 }
 
-resource existingLogAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+resource existingLogAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   scope: resourceGroup('${environmentResourceGroupName}')
   name: environmentResourceGroupName
 }
@@ -56,6 +56,7 @@ module virtualNetwork '../modules/virtual-network.bicep' = {
     location: location
     name: resourceGroupName
     tags: tags
+    address: '10.0.0.0'
   }
 }
 
@@ -93,7 +94,7 @@ module communicationService '../modules/communication-services.bicep' = {
   params: {
     name: resourceGroupName
     tags: tags
-    dataLocation: communicatoinServicesDataLocation
+    dataLocation: communicationServicesDataLocation
     mailSenderDisplayName: mailSenderDisplayName
     keyVaultName: keyVault.outputs.name
   }
@@ -144,6 +145,7 @@ module accountManagementIdentity '../modules/user-assigned-managed-identity.bice
     containerRegistryName: containerRegistryName
     environmentResourceGroupName: environmentResourceGroupName
     keyVaultName: keyVault.outputs.name
+    grantKeyVaultWritePermissions: true
   }
 }
 
@@ -206,7 +208,7 @@ var accountManagementEnvironmentVariables = [
   }
   {
     name: 'CDN_URL'
-    value: cdnUrl
+    value: '${cdnUrl}/account-management'
   }
   {
     name: 'SENDER_EMAIL_ADDRESS'
@@ -236,7 +238,6 @@ module accountManagementWorkers '../modules/container-app.bicep' = {
     hasProbesEndpoint: false
     environmentVariables: accountManagementEnvironmentVariables
   }
-  dependsOn: [accountManagementDatabase, accountManagementIdentity, communicationService]
 }
 
 module accountManagementApi '../modules/container-app.bicep' = {
@@ -261,7 +262,7 @@ module accountManagementApi '../modules/container-app.bicep' = {
     hasProbesEndpoint: true
     environmentVariables: accountManagementEnvironmentVariables
   }
-  dependsOn: [accountManagementDatabase, accountManagementIdentity, communicationService, accountManagementWorkers]
+  dependsOn: [accountManagementWorkers]
 }
 
 // Back Office
@@ -363,7 +364,6 @@ module backOfficeWorkers '../modules/container-app.bicep' = {
     hasProbesEndpoint: false
     environmentVariables: backOfficeEnvironmentVariables
   }
-  dependsOn: [backOfficeDatabase, backOfficeIdentity, communicationService]
 }
 
 module backOfficeApi '../modules/container-app.bicep' = {
@@ -388,7 +388,7 @@ module backOfficeApi '../modules/container-app.bicep' = {
     hasProbesEndpoint: true
     environmentVariables: backOfficeEnvironmentVariables
   }
-  dependsOn: [backOfficeDatabase, backOfficeIdentity, communicationService, backOfficeWorkers]
+  dependsOn: [backOfficeWorkers]
 }
 
 // App Gateway
@@ -458,7 +458,6 @@ module appGateway '../modules/container-app.bicep' = {
       }
     ]
   }
-  dependsOn: [appGatewayIdentity]
 }
 
 module appGatwayAccountManagementStorageBlobDataReaderRoleAssignment '../modules/role-assignments-storage-blob-data-reader.bicep' = {

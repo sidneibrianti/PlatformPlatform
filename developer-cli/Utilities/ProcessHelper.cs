@@ -11,13 +11,18 @@ public static class ProcessHelper
         var processStartInfo = CreateProcessStartInfo(command, solutionFolder, useShellExecute: true, createNoWindow: false);
         using var process = Process.Start(processStartInfo)!;
         process.WaitForExit();
+
+        if (process.ExitCode != 0)
+        {
+            Environment.Exit(process.ExitCode);
+        }
     }
 
     public static void OpenBrowser(string url)
     {
         if (Configuration.IsWindows)
         {
-            StartProcess($"start {url}");
+            StartProcess(new ProcessStartInfo { FileName = url, UseShellExecute = true });
         }
         else if (Configuration.IsMacOs)
         {
@@ -29,17 +34,6 @@ public static class ProcessHelper
         }
     }
 
-    public static string StartProcess(
-        string command,
-        string? solutionFolder = null,
-        bool redirectOutput = false,
-        bool waitForExit = true
-    )
-    {
-        var processStartInfo = CreateProcessStartInfo(command, solutionFolder, redirectOutput);
-        return StartProcess(processStartInfo, waitForExit: waitForExit);
-    }
-
     private static ProcessStartInfo CreateProcessStartInfo(
         string command,
         string? solutionFolder,
@@ -48,8 +42,9 @@ public static class ProcessHelper
         bool createNoWindow = false
     )
     {
-        var fileName = command.Split(' ')[0];
-        var arguments = command.Length > fileName.Length ? command.Substring(fileName.Length + 1) : string.Empty;
+        var originalFileName = command.Split(' ')[0];
+        var fileName = FindFullPathFromPath(originalFileName) ?? throw new FileNotFoundException($"Command '{command}' not found");
+        var arguments = command.Contains(' ') ? command[(originalFileName.Length + 1)..] : string.Empty;
         var processStartInfo = new ProcessStartInfo
         {
             FileName = fileName,
@@ -68,7 +63,26 @@ public static class ProcessHelper
         return processStartInfo;
     }
 
-    public static string StartProcess(ProcessStartInfo processStartInfo, string? input = null, bool waitForExit = true)
+    public static string StartProcess(
+        string command,
+        string? solutionFolder = null,
+        bool redirectOutput = false,
+        bool waitForExit = true,
+        bool exitOnError = true,
+        bool throwOnError = false
+    )
+    {
+        var processStartInfo = CreateProcessStartInfo(command, solutionFolder, redirectOutput);
+        return StartProcess(processStartInfo, waitForExit: waitForExit, exitOnError: exitOnError, throwOnError: throwOnError);
+    }
+
+    public static string StartProcess(
+        ProcessStartInfo processStartInfo,
+        string? input = null,
+        bool waitForExit = true,
+        bool exitOnError = true,
+        bool throwOnError = false
+    )
     {
         if (Configuration.VerboseLogging)
         {
@@ -90,6 +104,19 @@ public static class ProcessHelper
         if (!waitForExit) return string.Empty;
         process.WaitForExit();
 
+        if (process.ExitCode != 0)
+        {
+            if (throwOnError)
+            {
+                throw new ProcessExecutionException(process.ExitCode, $"Process exited with code {process.ExitCode}");
+            }
+
+            if (exitOnError)
+            {
+                Environment.Exit(process.ExitCode);
+            }
+        }
+
         return output;
     }
 
@@ -97,4 +124,34 @@ public static class ProcessHelper
     {
         return Process.GetProcessesByName(process).Length > 0;
     }
+
+    private static string? FindFullPathFromPath(string command)
+    {
+        string[] commandFormats = OperatingSystem.IsWindows() ? ["{0}.exe", "{0}.cmd"] : ["{0}"];
+
+        var pathVariable = Environment.GetEnvironmentVariable("PATH");
+        if (pathVariable is null) return null;
+
+        var separator = OperatingSystem.IsWindows() ? ';' : ':';
+        foreach (var directory in pathVariable.Split(separator))
+        {
+            foreach (var format in commandFormats)
+            {
+                var fullPath = Path.Combine(directory, string.Format(format, command));
+
+                if (File.Exists(fullPath))
+                {
+                    return fullPath;
+                }
+            }
+        }
+
+        return null;
+    }
+}
+
+public class ProcessExecutionException(int exitCode, string message)
+    : Exception(message)
+{
+    public int ExitCode { get; } = exitCode;
 }

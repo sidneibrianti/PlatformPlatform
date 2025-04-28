@@ -1,5 +1,5 @@
 using Bogus;
-using PlatformPlatform.SharedKernel.DomainCore.Identity;
+using PlatformPlatform.SharedKernel.StronglyTypedIds;
 
 namespace PlatformPlatform.AccountManagement.Tests;
 
@@ -14,11 +14,6 @@ public static class FakerExtensions
     {
         var random = new Random();
         return $"+{random.Next(1, 9)}-{faker.Phone.PhoneNumberFormat()}";
-    }
-
-    public static string Subdomain(this Faker faker)
-    {
-        return faker.Random.AlphaNumeric(10);
     }
 
     public static string InvalidEmail(this Faker faker)

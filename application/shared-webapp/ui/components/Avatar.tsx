@@ -5,7 +5,7 @@
 import { type HTMLAttributes, useCallback, useRef, useState } from "react";
 import { tv } from "tailwind-variants";
 
-type AvatarProps = {
+export type AvatarProps = {
   /**
    * The two-letter initials to display.
    */
@@ -33,7 +33,7 @@ type AvatarProps = {
 } & HTMLAttributes<HTMLImageElement>;
 
 const backgroundStyles = tv({
-  base: "inline-flex shrink-0 items-center border border-border justify-center overflow-hidden font-semibold uppercase",
+  base: "inline-flex shrink-0 items-center justify-center overflow-hidden border border-border font-semibold uppercase",
   variants: {
     isRound: {
       true: "rounded-full",
@@ -70,7 +70,7 @@ export function Avatar({ initials, avatarUrl, size, variant, isRound, className,
 
   return (
     <div {...props} className={backgroundStyles({ isRound, size, variant, className })}>
-      {avatarUrl && imageFailed === false ? (
+      {avatarUrl && !imageFailed ? (
         <img ref={imgRef} className="" src={avatarUrl} alt="User avatar" onError={handleError} />
       ) : (
         initials?.slice(0, 2)

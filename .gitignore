@@ -136,6 +136,7 @@ _ReSharper*/
 
 # Rider
 .idea
+.run
 result.xml
 result.json
 
@@ -394,3 +395,4 @@ dist/
 .turbo/
 
 **/translations/locale/*.ts
+CHANGELOG.md

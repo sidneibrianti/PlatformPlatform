@@ -14,34 +14,34 @@ public static class Configuration
 
     private static readonly string UserFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
+    public static readonly string AliasName = Assembly.GetExecutingAssembly().GetName().Name!;
+
     public static readonly string PublishFolder = IsWindows
         ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PlatformPlatform")
         : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".PlatformPlatform");
 
-    public static readonly string AliasName = Assembly.GetExecutingAssembly().GetName().Name!;
+    public static readonly string SourceCodeFolder = IsDebugMode
+        // In debug mode, the ProcessPath is in /developer-cli/artifacts/bin/DeveloperCli/debug/pp.exe
+        ? new DirectoryInfo(Environment.ProcessPath!).Parent!.Parent!.Parent!.Parent!.Parent!.Parent!.FullName
+        : new DirectoryInfo(GetConfigurationSetting().CliSourceCodeFolder!).Parent!.FullName;
+
+    public static readonly string ApplicationFolder = new(Path.Combine(SourceCodeFolder, "application"));
+
+    public static readonly string CliFolder = new(Path.Combine(SourceCodeFolder, "developer-cli"));
+
+    public static bool IsDebugMode => Environment.ProcessPath!.Contains("debug");
 
     private static string ConfigFile => Path.Combine(PublishFolder, $"{AliasName}.json");
 
     public static bool VerboseLogging { get; set; }
 
-    public static bool IsDebugMode => Environment.ProcessPath!.Contains("debug");
-
-    public static string GetSourceCodeFolder()
-    {
-        if (IsDebugMode)
-        {
-            // In debug mode the ProcessPath is in developer-cli/artifacts/bin/DeveloperCli/debug/pp.exe
-            return new DirectoryInfo(Environment.ProcessPath!).Parent!.Parent!.Parent!.Parent!.Parent!.FullName;
-        }
-
-        return GetConfigurationSetting().SourceCodeFolder!;
-    }
+    public static bool AutoConfirm { get; set; }
 
     public static ConfigurationSetting GetConfigurationSetting()
     {
         if (!File.Exists(ConfigFile) && IsDebugMode)
         {
-            return new ConfigurationSetting();
+            return new ConfigurationSetting { CliSourceCodeFolder = CliFolder };
         }
 
         try
@@ -72,6 +72,11 @@ public static class Configuration
 
     public static void SaveConfigurationSetting(ConfigurationSetting configurationSetting)
     {
+        if (!configurationSetting.IsValid)
+        {
+            throw new ArgumentException("Invalid configuration setting", nameof(configurationSetting));
+        }
+
         var jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
         var configuration = JsonSerializer.Serialize(configurationSetting, jsonSerializerOptions);
         File.WriteAllText(ConfigFile, configuration);
@@ -120,7 +125,7 @@ public static class Configuration
 
         internal static bool IsAliasRegisteredMacOs()
         {
-            if (!File.Exists(GetShellInfo().ProfilePath))
+            if (string.IsNullOrEmpty(GetShellInfo().ProfilePath))
             {
                 AnsiConsole.MarkupLine($"[red]Your shell [bold]{GetShellInfo().ShellName}[/] is not supported.[/]");
                 return false;
@@ -137,7 +142,7 @@ public static class Configuration
                 return;
             }
 
-            File.AppendAllLines(GetShellInfo().ProfilePath, new[] { AliasLineRepresentation });
+            File.AppendAllLines(GetShellInfo().ProfilePath, [AliasLineRepresentation]);
         }
 
         public static void DeleteAlias()
@@ -173,7 +178,7 @@ public static class Configuration
 
 public class ConfigurationSetting
 {
-    public string? SourceCodeFolder { get; set; }
+    public string? CliSourceCodeFolder { get; set; }
 
     public string? Hash { get; set; }
 
@@ -182,7 +187,7 @@ public class ConfigurationSetting
     {
         get
         {
-            if (string.IsNullOrEmpty(SourceCodeFolder)) return false;
+            if (CliSourceCodeFolder is null) return false;
 
             return !string.IsNullOrEmpty(Hash);
         }

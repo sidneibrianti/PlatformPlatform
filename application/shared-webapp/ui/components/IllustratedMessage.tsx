@@ -3,11 +3,11 @@
  */
 import type { PropsWithChildren } from "react";
 
-type IllustratedMessageProps = {} & PropsWithChildren;
+type IllustratedMessageProps = PropsWithChildren;
 
 export function IllustratedMessage({ children }: Readonly<IllustratedMessageProps>) {
   return (
-    <div className="flex flex-col gap-2 items-center justify-center stroke-muted-foreground [&>svg]:mb-4">
+    <div className="flex flex-col items-center justify-center gap-2 stroke-muted-foreground [&>svg]:mb-4">
       {children}
     </div>
   );

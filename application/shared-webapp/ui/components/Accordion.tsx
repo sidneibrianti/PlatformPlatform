@@ -7,6 +7,7 @@ import type { AccordionItemAriaProps, AriaAccordionProps } from "@react-aria/acc
 import { useAccordion, useAccordionItem } from "@react-aria/accordion";
 import { type TreeState, useTreeState } from "@react-stately/tree";
 import { ChevronDown } from "lucide-react";
+import type React from "react";
 import {
   type AriaRole,
   type ButtonHTMLAttributes,
@@ -77,10 +78,10 @@ function AccordionItemInstance<T>({ state, ...props }: AccordionItemInstanceProp
 
 const buttonStyles = tv({
   extend: focusRing,
-  base: "flex flex-1 items-center justify-between py-4 font-medium hover:underline rounded-md",
+  base: "flex flex-1 items-center justify-between rounded-md py-4 font-medium hover:underline",
   variants: {
     isDisabled: {
-      true: "opacity-50 pointer-events-none hover:underline-none"
+      true: "hover:underline-none pointer-events-none opacity-50"
     }
   }
 });
@@ -117,8 +118,8 @@ const contentStyles = tv({
   base: "overflow-hidden text-sm transition-all",
   variants: {
     isOpen: {
-      true: "animate-accordion-down h-auto",
-      false: "animate-accordion-up h-0"
+      true: "h-auto animate-accordion-down",
+      false: "h-0 animate-accordion-up"
     },
     isDisabled: {
       true: "text-muted-foreground"

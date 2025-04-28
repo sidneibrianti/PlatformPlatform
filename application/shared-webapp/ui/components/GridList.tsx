@@ -26,14 +26,14 @@ export function GridList<T extends object>({ children, ...props }: Readonly<Grid
 
 const itemStyles = tv({
   extend: focusRing,
-  base: "relative flex gap-3 cursor-default select-none py-2 px-3 text-sm border-y border-y-border border-transparent first:border-t-0 last:border-b-0 first:rounded-t-md last:rounded-b-md -mb-px last:mb-0 -outline-offset-2",
+  base: "-mb-px -outline-offset-2 relative flex cursor-default select-none gap-3 border-transparent border-y border-y-border px-3 py-2 text-sm first:rounded-t-md first:border-t-0 last:mb-0 last:rounded-b-md last:border-b-0",
   variants: {
     isSelected: {
-      false: "bg-background hover:bg-muted pressed:bg-muted/90",
-      true: "bg-muted/50 hover:bg-muted/90 pressed:bg-muted/80 z-20"
+      false: "bg-background pressed:bg-muted/90 hover:bg-muted",
+      true: "z-20 bg-muted/50 pressed:bg-muted/80 hover:bg-muted/90"
     },
     isDisabled: {
-      true: "text-muted-foreground/50 forced-colors:text-[GrayText] z-10"
+      true: "z-10 text-muted-foreground/50 forced-colors:text-[GrayText]"
     }
   }
 });
@@ -43,6 +43,7 @@ export function GridListItem({ children, ...props }: Readonly<GridListItemProps>
   return (
     <AriaGridListItem textValue={textValue} {...props} className={itemStyles}>
       {({ selectionMode, selectionBehavior, allowsDragging }) => (
+        // @ts-ignore - TypeScript 5.7.2 doesn't recognize that render prop children can return ReactNode[]
         <>
           {/* Add elements for drag and drop and selection. */}
           {allowsDragging && <Button slot="drag">≡</Button>}

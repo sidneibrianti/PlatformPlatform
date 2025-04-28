@@ -1,30 +1,30 @@
-import { useLingui } from "@lingui/react";
+import heroDesktopBlurImage from "@/shared//images/hero-desktop-blur.webp";
+import heroDesktopImage from "@/shared//images/hero-desktop-xl.webp";
+import heroMobileBlurImage from "@/shared/images/hero-mobile-blur.webp";
+import heroMobileImage from "@/shared/images/hero-mobile-xl.webp";
+import { t } from "@lingui/core/macro";
 import { Image } from "@repo/ui/components/Image";
-import heroMobileBlurImage from "@/public/images/hero-mobile-blur.webp";
-import heroDesktopBlurImage from "@/public/images/hero-desktop-blur.webp";
 
 export function HeroImage() {
-  const { i18n } = useLingui();
-
   return (
     <>
       <Image
-        src="/images/hero-mobile-xl.webp"
-        blurDataURL={heroMobileBlurImage}
+        src={heroMobileImage}
+        blurDataUrl={heroMobileBlurImage}
         width={560}
         height={620}
         className="block md:hidden"
-        alt={i18n.t("Screenshots of the dashboard project showing mobile versions")}
-        priority
+        alt={t`Screenshots of the dashboard project with mobile versions`}
+        priority={true}
       />
       <Image
-        src="/images/hero-desktop-xl.webp"
-        blurDataURL={heroDesktopBlurImage}
+        src={heroDesktopImage}
+        blurDataUrl={heroDesktopBlurImage}
         width={1000}
         height={760}
         className="hidden md:block"
-        alt={i18n.t("Screenshots of the dashboard project showing desktop and mobile versions")}
-        priority
+        alt={t`Screenshots of the dashboard project with desktop and mobile versions`}
+        priority={true}
       />
     </>
   );

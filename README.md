@@ -2,8 +2,11 @@
 
 <h4 align="center">
 
-[![AppGateway](https://github.com/platformplatform/PlatformPlatform/actions/workflows/app-gateway.yml/badge.svg)](https://github.com/platformplatform/PlatformPlatform/actions/workflows/app-gateway.yml?query=branch%3Amain)
-[![AccountManagement](https://github.com/platformplatform/PlatformPlatform/actions/workflows/account-management.yml/badge.svg)](https://github.com/platformplatform/PlatformPlatform/actions/workflows/account-management.yml?query=branch%3Amain)
+[![App Gateway](https://github.com/platformplatform/PlatformPlatform/actions/workflows/app-gateway.yml/badge.svg)](https://github.com/platformplatform/PlatformPlatform/actions/workflows/app-gateway.yml?query=branch%3Amain)
+[![Account Management](https://github.com/platformplatform/PlatformPlatform/actions/workflows/account-management.yml/badge.svg)](https://github.com/platformplatform/PlatformPlatform/actions/workflows/account-management.yml?query=branch%3Amain)
+[![Back Office](https://github.com/platformplatform/PlatformPlatform/actions/workflows/back-office.yml/badge.svg)](https://github.com/platformplatform/PlatformPlatform/actions/workflows/back-office.yml?query=branch%3Amain)
+[![Cloud Infrastructure](https://github.com/platformplatform/PlatformPlatform/actions/workflows/cloud-infrastructure.yml/badge.svg)](https://github.com/platformplatform/PlatformPlatform/actions/workflows/cloud-infrastructure.yml?query=branch%3Amain)
+
 [![GitHub issues with enhancement label](https://img.shields.io/github/issues-raw/platformplatform/PlatformPlatform/enhancement?label=enhancements&logo=github&color=%23A2EEEF)](https://github.com/orgs/PlatformPlatform/projects/1/views/3?filterQuery=-status%3A%22%E2%9C%85+Done%22+label%3Aenhancement)
 [![GitHub issues with roadmap label](https://img.shields.io/github/issues-raw/platformplatform/PlatformPlatform/roadmap?label=roadmap&logo=github&color=%23006B75)](https://github.com/orgs/PlatformPlatform/projects/2/views/2?filterQuery=is%3Aopen+label%3Aroadmap)
 [![GitHub issues with bug label](https://img.shields.io/github/issues-raw/platformplatform/PlatformPlatform/bug?label=bugs&logo=github&color=red)](https://github.com/platformplatform/PlatformPlatform/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
@@ -14,49 +17,56 @@
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=PlatformPlatform_platformplatform&metric=reliability_rating)](https://sonarcloud.io/component_measures?id=PlatformPlatform_platformplatform&metric=Reliability)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=PlatformPlatform_platformplatform&metric=sqale_rating)](https://sonarcloud.io/component_measures?id=PlatformPlatform_platformplatform&metric=Maintainability)
 
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=PlatformPlatform_platformplatform&metric=code_smells)](https://sonarcloud.io/project/issues?id=PlatformPlatform_platformplatform&resolved=false&types=CODE_SMELL)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=PlatformPlatform_platformplatform&metric=vulnerabilities)](https://sonarcloud.io/project/issues?id=PlatformPlatform_platformplatform&resolved=false&types=VULNERABILITY)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=PlatformPlatform_platformplatform&metric=bugs)](https://sonarcloud.io/project/issues?id=PlatformPlatform_platformplatform&resolved=false&types=BUG)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=PlatformPlatform_platformplatform&metric=sqale_index)](https://sonarcloud.io/component_measures?id=PlatformPlatform_platformplatform&metric=sqale_index)
-
 </h4>
 
 # 👋 Welcome to PlatformPlatform
 
-Kick-start building top-tier B2B & B2C cloud SaaS products with sleek design, fully localized and accessible, clean architecture, automated and fast DevOps, and top-notch security. All in one place – at zero cost.
+Kick-start building top-tier B2B & B2C cloud SaaS products with sleek design, fully localized and accessible, vertical slice architecture, automated and fast DevOps, and top-notch security.
 
 This is in the box:
 
-* **Backend** - .NET and C# adhering to the principles of Clean Architecture, DDD, CQRS, and clean code
-* **Frontend** - React using TypeScript, with a sleek fully localized UI and a mature accessible design system
+* **Backend** - .NET 9 and C# adhering to the principles of vertical slice architecture, DDD, CQRS, and clean code
+* **Frontend** - React 19 and TypeScript, fully localized using React Aria components for world-class accessibility
 * **CI/CD** - GitHub actions for fast passwordless deployments of application (Docker) and infrastructure (Bicep)
 * **Infrastructure** - Cost efficient and scalable Azure PaaS services like Azure Container Apps, Azure SQL, etc.
 * **Developer CLI** - Extendable .NET CLI for DevEx - set up CI/CD is one command and a couple of questions
 
-Still pre-alpha state, follow our [up-to-date roadmap](https://github.com/orgs/PlatformPlatform/projects/2/views/2) with core SaaS features like multi-tenancy, authentication, SSO, user management, telemetry, monitoring, alerts, multi-region, feature flags, back office for support, etc.
+Still in alpha state, follow our [up-to-date roadmap](https://github.com/orgs/PlatformPlatform/projects/2/views/2) with core SaaS features like multi-tenancy, authentication, SSO, user management, telemetry, monitoring, alerts, multi-region, feature flags, back office for support, etc.
 
 Show your support for our project – Give us a star on GitHub! It truly means a lot! ⭐
 
 # Getting Started 1-2-3
 
-TL;DR: Open the [PlatformPlatform](/application/PlatformPlatform.sln) solution in Rider or Visual Studio and run the [Aspire AppHost](/application/AppHost/AppHost.csproj) project.
+TL;DR: Open the [PlatformPlatform](/application/PlatformPlatform.slnx) solution in Rider or Visual Studio and run the [Aspire AppHost](/application/AppHost/AppHost.csproj) project.
 
-<img src="https://github.com/tjementum/PlatformPlatformScreenshots/blob/screenhosts/GettingStarted.gif?raw=true" alt="Getting Started" title="Getting Started" width="800"/>
+<img src="https://platformplatformgithub.blob.core.windows.net/$root/local-developer-experience.gif" alt="Getting Started" title="Developer Experience" width="800"/>
 
 ### Prerequisites
 
-For development, you need .NET, Aspire, Docker, and Node. And GitHub and Azure CLI for setting up CI/CD.
+For development, you need .NET, Docker, and Node. And GitHub and Azure CLI for setting up CI/CD.
 
 <details>
 
 <summary>Install prerequisites for Windows</summary>
+	
+1.	Open a PowerShell terminal as Administrator and run the following command to install Windows Subsystem for Linux (required for Docker):
+  
+    `wsl --install`
 
-Open a PowerShell terminal as Administrator and run the following commands:
+2.	Restart your computer if prompted.
 
-- `wsl --install` (Windows Subsystem for Linux, required for Docker)
-- Install [Chocolatey](https://chocolatey.org/install), a package manager for Windows
-- `choco install dotnet-sdk git docker-desktop nodejs azure-cli gh`
-- `dotnet workload update` and `dotnet workload install aspire`
+3.	Install .NET, Git, Docker Desktop, Node.js, Azure CLI, and GitHub CLI using winget (available only on Windows 11):
+
+    ```powershell
+    @(
+        "Microsoft.DotNet.SDK.9",
+        "Git.Git",
+        "Docker.DockerDesktop",
+        "OpenJS.NodeJS",
+        "Microsoft.AzureCLI",
+        "GitHub.cli"
+    ) | ForEach-Object { winget install --accept-package-agreements --accept-source-agreements --id $_ }
+    ```
 
 </details>
 
@@ -68,9 +78,8 @@ Open a terminal and run the following commands:
 
 - Install [Homebrew](https://brew.sh/), a package manager for Mac
 - `brew install --cask dotnet-sdk`
-- `brew install git docker node azure-cli gh`
-- `dotnet workload update` and `dotnet workload install aspire`
-- `dotnet dev-certs https --trust`
+- `brew install --cask docker`
+- `brew install git node azure-cli gh`
 
 </details>
 
@@ -117,16 +126,10 @@ Open a terminal and run the following commands:
   sudo apt-get update
   ```
 
-- Install .NET SDK 8.0, Node, GitHub CLI
+- Install .NET SDK 9.0, Node, GitHub CLI
 
   ```bash
-  sudo apt-get install -y dotnet-sdk-8.0 nodejs gh
-  ```
-
-- Install .NET Aspire workload
-
-  ```bash
-  sudo dotnet workload update && dotnet workload install aspire
+  sudo apt-get install -y dotnet-sdk-9.0 nodejs gh
   ```
 
 - Install Azure CLI
@@ -153,7 +156,7 @@ Open a terminal and run the following commands:
 
 </details>
 
-## 1. Fork and clone the repository
+## 1. Clone the repository
 
 Forking is only required to configure GitHub repository with continuous deployments to Azure ([step 3](#4-set-up-cicd-with-passwordless-deployments-from-github-to-azure)).
 
@@ -164,11 +167,11 @@ Our clean commit history serves as a great learning and troubleshooting resource
 Using .NET Aspire, docker images with SQL Server, Blob Storage, and mail server will be downloaded and started. No need install anything, or learn complicated commands. Simply run this command, and everything just works 🎉
 
 ```bash
-cd developer-cli
-dotnet run dev # First run will be slow as Docker images are downloaded
+cd application/AppHost
+dotnet run # First run will be slow as Docker images are downloaded
 ```
 
-Alternatively, open the [PlatformPlatform](/application/PlatformPlatform.sln) solution in Rider or Visual Studio and run the [Aspire AppHost](/application/AppHost/AppHost.csproj) project.
+Alternatively, open the [PlatformPlatform](/application/PlatformPlatform.slnx) solution in Rider or Visual Studio and run the [Aspire AppHost](/application/AppHost/AppHost.csproj) project.
 
 ## 3. Set up CI/CD with passwordless deployments from GitHub to Azure
 
@@ -189,12 +192,15 @@ Except for adding a DNS record, everything is fully automated. After successful 
 
 The infrastructure is configured with auto-scaling and hosting costs in focus. It will cost less than 2 USD per day for a cluster, and it will allow scaling to millions of users 🎉
 
+![Azure Costs](https://platformplatformgithub.blob.core.windows.net/$root/azure-costs-center.png)
+
 # Inside Our Monorepo
 
 PlatformPlatform is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) containing all application code, infrastructure, tools, libraries, documentation, etc. A monorepo is a powerful way to organize a codebase, used by Google, Facebook, Uber, Microsoft, etc.
 
 ```bash
 .
+├─ .ai-rules             # AI Rules for AI assistants, and documentation for developers
 ├─ .github               # Separate GitHub workflows for deploying Infrastructure and app
 ├─ application           # Contains the application source code
 │  ├─ AppHost            # .NET Aspire project starting app and all dependencies in Docker
@@ -202,18 +208,21 @@ PlatformPlatform is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) contain
 │  ├─ account-management # Self-contained system with account sign-up, user management, etc.
 │  │   ├─ WebApp         # React SPA frontend using TypeScript and React Aria Components
 │  │   ├─ Api            # Presentation layer exposing the API to WebApp or other clients
-│  │   ├─ Application    # Use Case layer containing CQRS Command and Query handlers 
-│  │   ├─ Domain         # Business logic containing DDD aggregates, entities, etc.
-│  │   ├─ Infrastructure # Integrations for accessing external resources (e.g., database)
+│  │   ├─ Core           # Core business logic, application use cases, and infrastructure
 │  │   ├─ Workers        # Background workers for long-running tasks and event processing
-│  │   └─ Tests          # Tests for the API, Application, Domain, and Infrastructure
-│  ├─ shared-kernel      # Reusable components for all self-contained systems
-│  ├─ [saas-scs]         # [Your SCS] Create your SaaS product as a self-contained system
-│  └─ back-office        # A self-contained system for operations and support (empty for now)
+│  │   └─ Tests          # Tests for the Api, Core, and Workers
+│  ├─ back-office        # A self-contained system for operations and support (empty for now)
+│  │   ├─ WebApp         # React SPA frontend using TypeScript and React Aria Components
+│  │   ├─ Api            # Presentation layer exposing the API to WebApp or other clients
+│  │   ├─ Core           # Core business logic, application use cases, and infrastructure
+│  │   ├─ Workers        # Background workers for long-running tasks and event processing
+│  │   └─ Tests          # Tests for the Api, Core, and Workers
+│  ├─ shared-kernel      # Reusable components and default configuration for all systems
+│  ├─ shared-webapp      # Reusable and styled React Aria Components that affect all systems 
+│  └─ [your-scs]         # [Your SCS] Create your SaaS product as a self-contained system
 ├─ cloud-infrastructure  # Contains Bash and Bicep scripts (IaC) for Azure resources
 │  ├─ cluster            # Scale units like production-west-eu, production-east-us, etc.
-│  ├─ environment        # Shared resources like App Insights for all Production clusters
-│  ├─ shared             # Azure Container Registry shared between all environments
+│  ├─ environment        # Shared resources like App Insights, Container Registry, etc.
 │  └─ modules            # Reusable Bicep modules like Container App, SQL Server, etc.
 └─ development-cli       # A .NET CLI tool for automating common developer tasks
 ```
@@ -222,11 +231,11 @@ PlatformPlatform is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) contain
 
 # Technologies
 
-### .NET 8 Backend With Clean Architecture, DDD, CQRS, Minimal API, and Aspire
+### .NET 9 Backend With Vertical Sliced Architecture, DDD, CQRS, Minimal API, and Aspire
 
 The backend is built using the most popular, mature, and commonly used technologies in the .NET ecosystem:
 
-- [.NET 8](https://dotnet.microsoft.com) and [C# 12](https://learn.microsoft.com/en-us/dotnet/csharp/tour-of-csharp)
+- [.NET 9](https://dotnet.microsoft.com) and [C# 13](https://learn.microsoft.com/en-us/dotnet/csharp/tour-of-csharp)
 - [.NET Aspire](https://aka.ms/dotnet-aspire)
 - [YARP](https://microsoft.github.io/reverse-proxy)
 - [ASP.NET Minimal API](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis)
@@ -241,7 +250,7 @@ The backend is built using the most popular, mature, and commonly used technolog
 
 <summary>Read more about the backend architecture</summary>
 
-- **Clean Architecture**: The codebase is organized into layers that promote separation of concerns and maintainability.
+- **Vertical Slice Architecture**: The codebase is organized around vertical slices, each representing a feature or module, promoting separation of concerns and maintainability.
 - **Domain-Driven Design (DDD)**: DDD principles are applied to ensure a clear and expressive domain model.
 - **Command Query Responsibility Segregation (CQRS)**: This clearly separates read (query) and write (command) operations, adhering to the single responsibility principle (each action is in a separate command).
 - **Screaming architecture**: The architecture is designed with namespaces (folders) per feature, making the concepts easily visible and expressive, rather than organizing the code by types like models and repositories.
@@ -251,18 +260,19 @@ The backend is built using the most popular, mature, and commonly used technolog
 - **Monolith prepared for self-contained systems**: The codebase is organized into a monolith, but the architecture is prepared for splitting in to self-contained systems. A self-contained system is a large microservice (or a small monolith) that contains the full stack including frontend, background jobs, etc. These can be developed, tested, deployed, and scaled in isolation, making it a good compromise between a large monolith and many small microservices. Unlike the popular backend-for-frontend (BFF) style with one shared frontend, this allows teams to work fully independently.
 - **Shared Kernel**: The codebase uses a shared kernel for all the boilerplate code required to build a clean codebase. The shared kernel ensures consistency between self-contained systems, e.g., enforcing tenant isolation, auditing, tracking, implementation of tactical DDD patterns like aggregate, entities, repository base, ID generation, etc.
 
-Although some features like authentication and multi-tenancy are not yet implemented, the current implementation serves as a solid foundation for building business logic without unnecessary boilerplate.
+Although some features like multi-tenancy are not yet implemented, the current implementation serves as a solid foundation for building business logic without unnecessary boilerplate.
 
 </details>
 
-### React Frontend With TypeScript, React Aria Components, and Node
+### React 19 Frontend With TypeScript, React Aria Components, and Node
 
 The frontend is built with these technologies:
 
-- [React](https://react.dev)
+- [React 19](https://react.dev)
 - [TypeScript](https://www.typescriptlang.org)
 - [React Aria Components](https://react-spectrum.adobe.com/react-aria/react-aria-components.html)
-- [Tanstack Router](https://tanstack.com)
+- [Tanstack Router](https://tanstack.com/router)
+- [Tanstack Query](https://tanstack.com/query)
 - [Node](https://nodejs.org/en)
 
 ### Azure Cloud Infrastructure With Enterprise-Grade Security and Zero Secrets
@@ -314,5 +324,3 @@ These are the resource groups created when deploying one staging cluster, and tw
 This is the security score after deploying PlatformPlatform resources to Azure. Achieving a 100% security score in Azure Defender for Cloud without exemptions is not trivial.
 
 ![Azure Security Recommendations](https://platformplatformgithub.blob.core.windows.net/AzureSecurityRecommendations.png)
-
-https://123456789012345678901234.blob.core.windows.net/profileimages/01HS13BVF09A8AYYCMR2T9P7ZN.png

@@ -1,42 +1,68 @@
-import { EllipsisVerticalIcon, Trash2Icon, UserIcon } from "lucide-react";
-import type { SortDescriptor } from "react-aria-components";
-import { MenuTrigger, TableBody } from "react-aria-components";
-import { useCallback, useState } from "react";
-import { Cell, Column, Row, Table, TableHeader } from "@repo/ui/components/Table";
-import { Badge } from "@repo/ui/components/Badge";
-import { Pagination } from "@repo/ui/components/Pagination";
-import { Popover } from "@repo/ui/components/Popover";
-import { Menu, MenuItem, MenuSeparator } from "@repo/ui/components/Menu";
-import { Button } from "@repo/ui/components/Button";
+import { SortOrder, SortableUserProperties, api, type components } from "@/shared/lib/api/client";
+import { getUserRoleLabel } from "@/shared/lib/api/userRole";
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { useUserInfo } from "@repo/infrastructure/auth/hooks";
 import { Avatar } from "@repo/ui/components/Avatar";
-import { SortOrder, SortableUserProperties, useApi } from "@/shared/lib/api/client";
+import { Badge } from "@repo/ui/components/Badge";
+import { Button } from "@repo/ui/components/Button";
+import { Menu, MenuItem, MenuSeparator } from "@repo/ui/components/Menu";
+import { Pagination } from "@repo/ui/components/Pagination";
+import { Cell, Column, Row, Table, TableHeader } from "@repo/ui/components/Table";
+import { formatDate } from "@repo/utils/date/formatDate";
+import { getInitials } from "@repo/utils/string/getInitials";
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import { EllipsisVerticalIcon, PencilIcon, Trash2Icon, UserIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import type { Selection, SortDescriptor } from "react-aria-components";
+import { MenuTrigger, TableBody } from "react-aria-components";
+import { ChangeUserRoleDialog } from "./ChangeUserRoleDialog";
+import { DeleteUserDialog } from "./DeleteUserDialog";
 
-export function UserTable() {
+type UserDetails = components["schemas"]["UserDetails"];
+
+interface UserTableProps {
+  selectedUsers: UserDetails[];
+  onSelectedUsersChange: (users: UserDetails[]) => void;
+}
+
+export function UserTable({ selectedUsers, onSelectedUsersChange }: Readonly<UserTableProps>) {
   const navigate = useNavigate();
-  const { orderBy, pageOffset, sortOrder } = useSearch({ strict: false });
+  const { search, userRole, userStatus, startDate, endDate, orderBy, sortOrder, pageOffset } = useSearch({
+    strict: false
+  });
+  const userInfo = useUserInfo();
 
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>(() => ({
-    column: orderBy,
+    column: orderBy ?? "email",
     direction: sortOrder === "Ascending" ? "ascending" : "descending"
   }));
 
-  const { data } = useApi("/api/account-management/users", {
+  const { data: users, isLoading } = api.useQuery("get", "/api/account-management/users", {
     params: {
       query: {
-        PageOffset: pageOffset,
+        Search: search,
+        UserRole: userRole,
+        UserStatus: userStatus,
+        StartDate: startDate,
+        EndDate: endDate,
         OrderBy: orderBy,
-        SortOrder: sortOrder
+        SortOrder: sortOrder,
+        PageOffset: pageOffset
       }
     }
   });
 
+  const [userToDelete, setUserToDelete] = useState<UserDetails | null>(null);
+  const [userToChangeRole, setUserToChangeRole] = useState<UserDetails | null>(null);
+
   const handlePageChange = useCallback(
-    (pageOffset: number) => {
+    (page: number) => {
       navigate({
+        to: "/admin/users",
         search: (prev) => ({
           ...prev,
-          pageOffset: pageOffset
+          pageOffset: page === 1 ? undefined : page - 1
         })
       });
     },
@@ -45,135 +71,198 @@ export function UserTable() {
 
   const handleSortChange = useCallback(
     (newSortDescriptor: SortDescriptor) => {
-      console.log(newSortDescriptor);
       setSortDescriptor(newSortDescriptor);
       navigate({
+        to: "/admin/users",
         search: (prev) => ({
           ...prev,
           orderBy: (newSortDescriptor.column?.toString() ?? "Name") as SortableUserProperties,
-          sortOrder: newSortDescriptor.direction === "ascending" ? SortOrder.Ascending : SortOrder.Descending
+          sortOrder: newSortDescriptor.direction === "ascending" ? SortOrder.Ascending : SortOrder.Descending,
+          pageOffset: undefined
         })
       });
     },
     [navigate]
   );
 
-  const currentPage = (data?.currentPageOffset ?? 0) + 1;
+  useEffect(() => {
+    onSelectedUsersChange([]);
+  }, [onSelectedUsersChange]);
+
+  const handleSelectionChange = useCallback(
+    (keys: Selection) => {
+      if (keys === "all") {
+        onSelectedUsersChange(users?.users ?? []);
+      } else {
+        const selectedKeys = typeof keys === "string" ? new Set([keys]) : keys;
+        const selectedUsersList = users?.users.filter((user) => selectedKeys.has(user.id)) ?? [];
+        onSelectedUsersChange(selectedUsersList);
+      }
+    },
+    [users?.users, onSelectedUsersChange]
+  );
+
+  if (isLoading) {
+    return null;
+  }
+
+  const currentPage = (users?.currentPageOffset ?? 0) + 1;
 
   return (
-    <div className="flex flex-col gap-2 h-full w-full">
-      <Table
-        selectionMode="multiple"
-        selectionBehavior="toggle"
-        sortDescriptor={sortDescriptor}
-        onSortChange={handleSortChange}
-        aria-label="Users"
-      >
-        <TableHeader>
-          <Column minWidth={50} defaultWidth={200} allowsSorting id={SortableUserProperties.Name} isRowHeader>
-            Name
-          </Column>
-          <Column minWidth={50} allowsSorting id={SortableUserProperties.Email}>
-            Email
-          </Column>
-          <Column minWidth={55} allowsSorting id={SortableUserProperties.CreatedAt}>
-            Added
-          </Column>
-          <Column minWidth={55} allowsSorting id={SortableUserProperties.ModifiedAt}>
-            Last Seen
-          </Column>
-          <Column minWidth={75} allowsSorting id={SortableUserProperties.Role}>
-            Role
-          </Column>
-          <Column minWidth={114} defaultWidth={114}>
-            Actions
-          </Column>
-        </TableHeader>
-        <TableBody>
-          {data?.users.map((user) => (
-            <Row key={user.id}>
-              <Cell>
-                <div className="flex h-14 items-center gap-2">
-                  <Avatar
-                    initials={getInitials(user.firstName, user.lastName, user.email)}
-                    avatarUrl={user.avatarUrl}
-                    size="sm"
-                    isRound
-                  />
-                  <div className="flex flex-col truncate">
-                    <div className="truncate">
-                      {user.firstName} {user.lastName}
+    <>
+      <ChangeUserRoleDialog
+        user={userToChangeRole}
+        isOpen={userToChangeRole !== null}
+        onOpenChange={(isOpen) => !isOpen && setUserToChangeRole(null)}
+      />
+
+      <DeleteUserDialog
+        users={userToDelete ? [userToDelete] : []}
+        isOpen={userToDelete !== null}
+        onOpenChange={(isOpen) => !isOpen && setUserToDelete(null)}
+      />
+
+      <div className="flex h-full w-full flex-col gap-2">
+        <Table
+          key={`${search}-${userRole}-${userStatus}-${startDate}-${endDate}-${orderBy}-${sortOrder}`}
+          selectionMode="multiple"
+          selectionBehavior="toggle"
+          selectedKeys={selectedUsers.map((user) => user.id)}
+          onSelectionChange={handleSelectionChange}
+          sortDescriptor={sortDescriptor}
+          onSortChange={handleSortChange}
+          aria-label={t`Users`}
+        >
+          <TableHeader>
+            <Column minWidth={180} allowsSorting={true} id={SortableUserProperties.Name} isRowHeader={true}>
+              <Trans>Name</Trans>
+            </Column>
+            <Column minWidth={120} allowsSorting={true} id={SortableUserProperties.Email}>
+              <Trans>Email</Trans>
+            </Column>
+            <Column minWidth={65} defaultWidth={110} allowsSorting={true} id={SortableUserProperties.CreatedAt}>
+              <Trans>Created</Trans>
+            </Column>
+            <Column minWidth={65} defaultWidth={120} allowsSorting={true} id={SortableUserProperties.ModifiedAt}>
+              <Trans>Modified</Trans>
+            </Column>
+            <Column minWidth={100} defaultWidth={75} allowsSorting={true} id={SortableUserProperties.Role}>
+              <Trans>Role</Trans>
+            </Column>
+            <Column width={114}>
+              <Trans>Actions</Trans>
+            </Column>
+          </TableHeader>
+          <TableBody>
+            {users?.users.map((user) => (
+              <Row key={user.id} id={user.id}>
+                <Cell>
+                  <div className="flex h-14 items-center gap-2">
+                    <Avatar
+                      initials={getInitials(user.firstName, user.lastName, user.email)}
+                      avatarUrl={user.avatarUrl}
+                      size="sm"
+                      isRound={true}
+                    />
+                    <div className="flex flex-col truncate">
+                      <div className="truncate text-foreground">
+                        {user.firstName} {user.lastName}
+                        {user.emailConfirmed ? (
+                          ""
+                        ) : (
+                          <Badge variant="outline">
+                            <Trans>Pending</Trans>
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="truncate">{user.title ?? ""}</div>
                     </div>
-                    <div className="text-muted-foreground truncate">{user.title ?? ""}</div>
                   </div>
-                </div>
-              </Cell>
-              <Cell>{user.email}</Cell>
-              <Cell>{toFormattedDate(user.createdAt)}</Cell>
-              <Cell>{toFormattedDate(user.modifiedAt)}</Cell>
-              <Cell>
-                <Badge variant="outline">Member</Badge>
-              </Cell>
-              <Cell>
-                <div className="group flex gap-2 w-full">
-                  <Button
-                    variant="icon"
-                    className="group-hover:opacity-100 opacity-0 duration-300 transition-opacity ease-in-out"
-                  >
-                    <Trash2Icon className="w-4 h-4" />
-                  </Button>
-                  <MenuTrigger>
-                    <Button variant="icon" aria-label="Menu">
-                      <EllipsisVerticalIcon className="w-4 h-4" />
+                </Cell>
+                <Cell>{user.email}</Cell>
+                <Cell>{formatDate(user.createdAt)}</Cell>
+                <Cell>{formatDate(user.modifiedAt)}</Cell>
+                <Cell>
+                  <Badge variant="outline">{getUserRoleLabel(user.role)}</Badge>
+                </Cell>
+                <Cell>
+                  <div className="group flex w-full gap-2">
+                    <Button
+                      variant="icon"
+                      className="opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
+                      onPress={() => {
+                        onSelectedUsersChange([user]);
+                        setUserToDelete(user);
+                      }}
+                      isDisabled={user.id === userInfo?.id}
+                    >
+                      <Trash2Icon className="h-5 w-5 text-muted-foreground" />
                     </Button>
-                    <Popover>
+                    <MenuTrigger
+                      onOpenChange={(isOpen) => {
+                        if (isOpen) {
+                          onSelectedUsersChange([user]);
+                        }
+                      }}
+                    >
+                      <Button variant="icon" aria-label={t`Menu`}>
+                        <EllipsisVerticalIcon className="h-5 w-5 text-muted-foreground" />
+                      </Button>
                       <Menu>
-                        <MenuItem onAction={() => alert("open")}>
-                          <UserIcon className="w-4 h-4" />
-                          View Profile
+                        <MenuItem id="viewProfile">
+                          <UserIcon className="h-4 w-4" />
+                          <Trans>View profile</Trans>
+                        </MenuItem>
+                        <MenuItem
+                          id="changeRole"
+                          isDisabled={userInfo?.role !== "Owner" || userInfo?.id === user.id}
+                          onAction={() => setUserToChangeRole(user)}
+                        >
+                          <PencilIcon className="h-4 w-4 group-disabled:text-muted-foreground" />
+                          <span className="group-disabled:text-muted-foreground">
+                            <Trans>Change role</Trans>
+                          </span>
                         </MenuItem>
                         <MenuSeparator />
-                        <MenuItem onAction={() => alert("rename")}>
-                          <Trash2Icon className="w-4 h-4 text-destructive" />
-                          <span className="text-destructive">Delete</span>
+                        <MenuItem
+                          id="deleteUser"
+                          isDisabled={userInfo?.role !== "Owner" || user.id === userInfo?.id}
+                          onAction={() => setUserToDelete(user)}
+                        >
+                          <Trash2Icon className="h-4 w-4 text-destructive" />
+                          <span className="text-destructive">
+                            <Trans>Delete</Trans>
+                          </span>
                         </MenuItem>
                       </Menu>
-                    </Popover>
-                  </MenuTrigger>
-                </div>
-              </Cell>
-            </Row>
-          ))}
-        </TableBody>
-      </Table>
-      <Pagination
-        size={5}
-        currentPage={currentPage}
-        totalPages={data?.totalPages ?? 1}
-        onPageChange={handlePageChange}
-        className="w-full pr-12 sm:hidden"
-      />
-      <Pagination
-        size={7}
-        nextLabel="Next"
-        previousLabel="Previous"
-        currentPage={currentPage}
-        totalPages={data?.totalPages ?? 1}
-        onPageChange={handlePageChange}
-        className="hidden sm:flex w-full"
-      />
-    </div>
+                    </MenuTrigger>
+                  </div>
+                </Cell>
+              </Row>
+            ))}
+          </TableBody>
+        </Table>
+        {users && (
+          <>
+            <Pagination
+              paginationSize={5}
+              currentPage={currentPage}
+              totalPages={users?.totalPages ?? 1}
+              onPageChange={handlePageChange}
+              className="w-full pr-12 sm:hidden"
+            />
+            <Pagination
+              paginationSize={9}
+              currentPage={currentPage}
+              totalPages={users?.totalPages ?? 1}
+              onPageChange={handlePageChange}
+              previousLabel={t`Previous`}
+              nextLabel={t`Next`}
+              className="hidden w-full sm:flex"
+            />
+          </>
+        )}
+      </div>
+    </>
   );
-}
-
-function toFormattedDate(input: string | undefined | null) {
-  if (!input) return "";
-  const date = new Date(input);
-  return date.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
-}
-
-function getInitials(firstName: string | undefined, lastName: string | undefined, email: string | undefined) {
-  if (firstName && lastName) return `${firstName[0]}${lastName[0]}`;
-  if (email == null) return "";
-  return email.split("@")[0].slice(0, 2).toUpperCase();
 }

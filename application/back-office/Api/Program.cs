@@ -1,27 +1,25 @@
-using PlatformPlatform.BackOffice.Application;
-using PlatformPlatform.BackOffice.Domain;
-using PlatformPlatform.BackOffice.Infrastructure;
-using PlatformPlatform.SharedKernel.ApiCore;
-using PlatformPlatform.SharedKernel.ApiCore.SinglePageApp;
+using PlatformPlatform.BackOffice;
+using PlatformPlatform.SharedKernel.Configuration;
+using PlatformPlatform.SharedKernel.SinglePageApp;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure services for the Application, Infrastructure, and Api layers like Entity Framework, Repositories, MediatR,
-// FluentValidation validators, Pipelines.
+// Configure storage infrastructure like Database, BlobStorage, Logging, Telemetry, Entity Framework DB Context, etc.
+builder
+    .AddApiInfrastructure()
+    .AddDevelopmentPort(9200)
+    .AddBackOfficeInfrastructure();
+
+// Configure dependency injection services like Repositories, MediatR, Pipelines, FluentValidation validators, etc.
 builder.Services
-    .AddApplicationServices()
-    .AddInfrastructureServices()
-    .AddApiCoreServices(builder, Assembly.GetExecutingAssembly(), DomainConfiguration.Assembly)
-    .AddConfigureStorage(builder)
-    .AddSinglePageAppFallback()
-    .ConfigureDevelopmentPort(builder, 9200);
+    .AddApiServices(Assembly.GetExecutingAssembly(), Configuration.Assembly)
+    .AddBackOfficeServices()
+    .AddSinglePageAppFallback();
 
 var app = builder.Build();
 
-// Add common configuration for all APIs like Swagger, HSTS, and DeveloperExceptionPage.
-app.UseApiCoreConfiguration();
+app
+    .UseApiServices() // Add common configuration for all APIs like Swagger, HSTS, and DeveloperExceptionPage.
+    .UseSinglePageAppFallback(); // Server the SPA and static files if no other endpoints are found
 
-// Server the SPA and static files if no other endpoints are found
-app.UseSinglePageAppFallback();
-
-app.Run();
+await app.RunAsync();
